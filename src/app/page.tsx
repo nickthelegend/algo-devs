@@ -1,101 +1,153 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowRight, Code, Gem, GitBranch, GraduationCap } from "lucide-react"
+
+const tags = ["Smart Contracts", "DeFi", "NFTs", "Web3", "Blockchain", "dApps", "AI", "Development"]
+
+const features = [
+  {
+    title: "Bounties",
+    description: "Earn rewards by solving blockchain challenges and contributing to the ecosystem",
+    icon: Gem,
+  },
+  {
+    title: "Open Source Projects",
+    description: "Collaborate on cutting-edge Algorand projects and shape the future of blockchain",
+    icon: GitBranch,
+  },
+  {
+    title: "Learning Resources",
+    description: "Access comprehensive tutorials and documentation to master Algorand development",
+    icon: GraduationCap,
+  },
+]
+
+const stats = [
+  { label: "Active Developers", value: "5,000+" },
+  { label: "Total Bounties", value: "$500K+" },
+  { label: "Projects Launched", value: "1,000+" },
+  { label: "Community Members", value: "50,000+" },
+]
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="bg-[#0c0909]">
+      {/* Hero Section */}
+      <section className="relative min-h-screen pt-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0c0909] via-[#6104d7]/20 to-[#ec0033]/20 pointer-events-none" />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        <div className="container relative mx-auto px-4 pt-20 pb-32">
+          <div className="max-w-4xl">
+            <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 tracking-tighter">
+              ALGO
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6104d7] to-[#ec0033]">DEVS</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl">
+              Join the future of blockchain development. Build, learn, and innovate with the Algorand community.
+            </p>
+            <div className="flex flex-wrap gap-4 mb-12">
+              <Button size="lg" className="bg-[#6104d7] hover:bg-[#6104d7]/90 text-white border-0">
+                Start Building
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-[#ec0033] text-[#ec0033] hover:bg-[#ec0033] hover:text-white"
+              >
+                View Bounties
+              </Button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="px-4 py-1.5 rounded-full text-sm font-medium bg-white/5 text-white/80 border border-white/10"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-[#6104d7]/20 blur-3xl rounded-full transform translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-1/2 right-1/4 w-48 h-48 bg-[#ec0033]/20 blur-3xl rounded-full" />
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 bg-black/40">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className="text-4xl font-bold text-white mb-2">{stat.value}</div>
+                <div className="text-gray-400">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-white mb-12 text-center">
+            Build the Future of <span className="text-[#6104d7]">Blockchain</span>
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature) => (
+              <Card key={feature.title} className="bg-black/40 border-white/10">
+                <CardContent className="p-6">
+                  <feature.icon className="h-12 w-12 text-[#ec0033] mb-4" />
+                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-400">{feature.description}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-[#6104d7]/20 to-[#ec0033]/20">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold text-white mb-6">Ready to Start Building?</h2>
+          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+            Join our community of developers and start contributing to the Algorand ecosystem
+          </p>
+          <Button size="lg" className="bg-[#ec0033] hover:bg-[#ec0033]/90 text-white">
+            Get Started <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+      </section>
+
+      {/* Latest Projects Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-white mb-12">Latest Projects</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="bg-black/40 border-white/10">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Code className="h-8 w-8 text-[#6104d7]" />
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#6104d7]/20 text-[#6104d7]">
+                      Active
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Project {i}</h3>
+                  <p className="text-gray-400 mb-4">A decentralized application built on Algorand</p>
+                  <Button variant="ghost" className="text-[#6104d7] hover:text-[#6104d7]/90">
+                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  )
 }
+
