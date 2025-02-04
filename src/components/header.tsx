@@ -26,12 +26,12 @@ export function Header() {
         <div className="flex items-center">
           <Sheet>
             <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon" className="mr-2 px-0 text-white hover:bg-white/10 transition-colors">
+              <Button variant="ghost" size="icon" className="mr-2 px-0 text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] bg-[#0c0909] border-[#6104d7]">
+            <SheetContent side="left" className="w-[300px] bg-[#0c0909] border-white/20">
               <div className="flex flex-col space-y-6">
                 <Link href="/" className="flex items-center space-x-2">
                   <span className="text-xl font-bold text-white">AlgoDevs</span>
@@ -44,7 +44,7 @@ export function Header() {
                       className={cn(
                         "group relative px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:text-white",
                         pathname === item.href && "text-white",
-                        "after:absolute after:inset-y-0 after:left-0 after:w-[2px] after:bg-[#6104d7] after:opacity-0 after:transition-opacity hover:after:opacity-100",
+                        "after:absolute after:inset-y-0 after:left-0 after:w-[2px] after:bg-white after:opacity-0 after:transition-opacity hover:after:opacity-100",
                         pathname === item.href && "after:opacity-100",
                       )}
                     >
@@ -53,10 +53,7 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="flex flex-col space-y-4 px-4">
-                  <Button variant="ghost" className="w-full justify-start text-white">
-                    Login
-                  </Button>
-                  <Button className="w-full bg-[#ec0033] hover:bg-[#d10029] text-white border-0">Get started</Button>
+                  <Button className="w-full bg-white hover:bg-white/90 text-black">Connect Wallet</Button>
                 </div>
               </div>
             </SheetContent>
@@ -82,12 +79,9 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" className="text-white hover:bg-white/10" asChild>
-            <Link href="/login">Login</Link>
-          </Button>
-          <Button className="hidden sm:inline-flex bg-[#ec0033] text-white hover:bg-[#d10029] border-0" asChild>
-            <Link href="/signup">Get started</Link>
+        <div className="flex items-center">
+          <Button className="bg-white hover:bg-white/90 text-black" asChild>
+            <Link href="#">Connect Wallet</Link>
           </Button>
         </div>
       </div>
