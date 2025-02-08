@@ -1,101 +1,54 @@
 "use client"
-
-import { useState, useRef } from "react"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Bot, User } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { LinkIcon, Sparkles } from "lucide-react"
 
-const categories = ["Smart Contracts", "DeFi", "NFTs", "Tokenomics", "Development", "Security", "Governance"]
-
-export default function ChatPage() {
-  const [messages, setMessages] = useState([
-    {
-      content: "Hello! I'm ALGO AI, your Algorand development assistant. How can I help you today?",
-      sender: "ai",
-    },
-  ])
-  const [input, setInput] = useState("")
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-
-  const handleSend = () => {
-    if (!input.trim()) return
-    setMessages([...messages, { content: input, sender: "user" }])
-    setInput("")
-    // Add AI response logic here
-  }
-
+export default function HomePage() {
   return (
-    <main className="min-h-screen animated-gradient pt-20">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-6">
-          {/* Main Chat Area */}
-          <div className="flex-1 glass-effect rounded-lg overflow-hidden">
-            <ScrollArea className="h-[calc(100vh-12rem)]" ref={scrollAreaRef}>
-              <div className="p-4 space-y-4">
-                {messages.map((message, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-start gap-3 ${message.sender === "user" ? "flex-row-reverse" : ""}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        message.sender === "user" ? "bg-white" : "bg-black"
-                      }`}
-                    >
-                      {message.sender === "user" ? (
-                        <User className="h-4 w-4 text-black" />
-                      ) : (
-                        <Bot className="h-4 w-4 text-white" />
-                      )}
-                    </div>
-                    <div
-                      className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                        message.sender === "user" ? "bg-white text-black" : "bg-black text-white"
-                      }`}
-                    >
-                      {message.content}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            <div className="p-4 border-t border-white/10">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask anything about Algorand..."
-                  className="bg-transparent border-white/20 text-white"
-                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                />
-                <Button onClick={handleSend} className="bg-white text-black hover:bg-white/90">
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
+    <main className="min-h-screen animated-gradient">
+      <div className="container mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-screen">
+        <div className="max-w-3xl w-full space-y-4 text-center">
+          <h1 className="text-4xl sm:text-5xl font-bold text-white mb-2">What do you want to build?</h1>
+          <p className="text-gray-400 text-lg mb-8">Prompt, run, edit, and deploy full-stack web apps.</p>
+
+          <div className="relative">
+            <Textarea
+              placeholder="How can Bolt help you today?"
+              className="w-full h-32 bg-[#1a1a1a]/50 border border-white/10 rounded-lg text-white placeholder:text-gray-400 resize-none"
+            />
+            <div className="absolute bottom-3 right-3 flex gap-2">
+              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                <LinkIcon className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="text-gray-400 hover:text-white">
+                <Sparkles className="h-5 w-5" />
+              </Button>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="w-64 space-y-4">
-            <Card className="glass-effect p-4">
-              <h3 className="text-lg font-semibold text-white mb-3">Categories</h3>
-              <div className="space-y-2">
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    variant="ghost"
-                    className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </Card>
+          <div className="flex flex-wrap justify-center gap-2 mt-8">
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Start a blog with Astro
+            </Button>
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Build a mobile app with NativeScript
+            </Button>
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Create a docs site with Vitepress
+            </Button>
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Scaffold UI with shadcn
+            </Button>
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Draft a presentation with Slidev
+            </Button>
+            <Button variant="outline" className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10">
+              Code a video with Remotion
+            </Button>
           </div>
         </div>
       </div>
     </main>
   )
 }
+
