@@ -76,7 +76,7 @@ export default function OpenSourcePage() {
                     </div>
                   </div>
                 </div>
-                <Button variant="outline" className="text-white border-white/20">
+                <Button variant="outline" className=" border-white/20">
                   View Project
                 </Button>
               </div>

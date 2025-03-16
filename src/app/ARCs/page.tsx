@@ -27,7 +27,7 @@ export default function ARCsPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input placeholder="Search ARCs..." className="pl-10 bg-transparent border-white/20 text-white" />
             </div>
-            <Button variant="outline" className="text-white border-white/20">
+            <Button variant="outline" className=" border-white/20">
               <Filter className="mr-2 h-4 w-4" /> Filter
             </Button>
           </div>
