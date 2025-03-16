@@ -6,19 +6,30 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { ConnectWalletButton } from "@/components/connect-wallet-button"
+import { useWallet } from "@txnlab/use-wallet-react"
 
-const navigationItems = [
-  { name: "Bounties", href: "/bounties" },
-  { name: "Projects", href: "/projects" },
+// Base navigation items always visible
+const baseNavigationItems = [
   { name: "Open Source", href: "/open" },
   { name: "Learn", href: "/learn" },
   { name: "ARCs", href: "/ARCs" },
   { name: "Docs", href: "/docs" },
+]
+
+// Navigation items only visible when wallet is connected
+const walletRequiredItems = [
+  { name: "Bounties", href: "/bounties" },
+  { name: "Projects", href: "/projects" },
   { name: "AI", href: "/chat" },
 ]
 
 export function Header() {
   const pathname = usePathname()
+  const { activeAccount } = useWallet()
+
+  // Combine navigation items based on wallet connection status
+  const navigationItems = activeAccount ? [...walletRequiredItems, ...baseNavigationItems] : baseNavigationItems
 
   return (
     <header className="fixed top-0 z-50 w-full bg-black/80 backdrop-blur-md border-b border-white/10">
@@ -53,7 +64,7 @@ export function Header() {
                   ))}
                 </nav>
                 <div className="flex flex-col space-y-4 px-4">
-                  <Button className="w-full bg-white hover:bg-white/90 text-black">Connect Wallet</Button>
+                  <ConnectWalletButton />
                 </div>
               </div>
             </SheetContent>
@@ -80,9 +91,7 @@ export function Header() {
         </nav>
 
         <div className="flex items-center">
-          <Button className="bg-white hover:bg-white/90 text-black" asChild>
-            <Link href="#">Connect Wallet</Link>
-          </Button>
+          <ConnectWalletButton />
         </div>
       </div>
     </header>
