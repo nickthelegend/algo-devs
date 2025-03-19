@@ -1,25 +1,22 @@
-"use client";
+"use client"
 
-import ChevronLeftIcon from "@/components/icons/chevron-left";
-import ChevronRightIcon from "@/components/icons/chevron-right";
-import CloseIcon from "@/components/icons/close-icon";
-import RefreshIcon from "@/components/icons/refresh";
-import { extractFirstCodeBlock, splitByFirstCodeFence } from "@/lib/utils";
-import { useState } from "react";
-import type { Chat, Message } from "./page";
-import { Share } from "./share";
-import { StickToBottom } from "use-stick-to-bottom";
-import dynamic from "next/dynamic";
+import ChevronLeftIcon from "@/components/icons/chevron-left"
+import ChevronRightIcon from "@/components/icons/chevron-right"
+import CloseIcon from "@/components/icons/close-icon"
+import RefreshIcon from "@/components/icons/refresh"
+import { extractFirstCodeBlock, splitByFirstCodeFence } from "@/lib/utils"
+import { useState } from "react"
+import type { Chat, Message } from "./page"
+import { Share } from "./share"
+import { StickToBottom } from "use-stick-to-bottom"
+import dynamic from "next/dynamic"
 
 const CodeRunner = dynamic(() => import("@/components/code-runner"), {
   ssr: false,
-});
-const SyntaxHighlighter = dynamic(
-  () => import("@/components/syntax-highlighter"),
-  {
-    ssr: false,
-  },
-);
+})
+const SyntaxHighlighter = dynamic(() => import("@/components/syntax-highlighter"), {
+  ssr: false,
+})
 
 export default function CodeViewer({
   chat,
@@ -31,57 +28,43 @@ export default function CodeViewer({
   onClose,
   onRequestFix,
 }: {
-  chat: Chat;
-  streamText: string;
-  message?: Message;
-  onMessageChange: (v: Message) => void;
-  activeTab: string;
-  onTabChange: (v: "code" | "preview") => void;
-  onClose: () => void;
-  onRequestFix: (e: string) => void;
+  chat: Chat
+  streamText: string
+  message?: Message
+  onMessageChange: (v: Message) => void
+  activeTab: string
+  onTabChange: (v: "code" | "preview") => void
+  onClose: () => void
+  onRequestFix: (e: string) => void
 }) {
-  const app = message ? extractFirstCodeBlock(message.content) : undefined;
-  const streamAppParts = splitByFirstCodeFence(streamText);
+  const app = message ? extractFirstCodeBlock(message.content) : undefined
+  const streamAppParts = splitByFirstCodeFence(streamText)
   const streamApp = streamAppParts.find(
-    (p) =>
-      p.type === "first-code-fence-generating" || p.type === "first-code-fence",
-  );
-  const streamAppIsGenerating = streamAppParts.some(
-    (p) => p.type === "first-code-fence-generating",
-  );
-
-  const code = streamApp ? streamApp.content : app?.code || "";
-  const language = streamApp ? streamApp.language : app?.language || "";
-  const title = streamApp ? streamApp.filename.name : app?.filename?.name || "";
-  const layout = ["python", "ts", "js", "javascript", "typescript"].includes(
-    language,
+    (p) => p.type === "first-code-fence-generating" || p.type === "first-code-fence",
   )
-    ? "two-up"
-    : "tabbed";
+  const streamAppIsGenerating = streamAppParts.some((p) => p.type === "first-code-fence-generating")
 
-  const assistantMessages = chat.messages.filter((m) => m.role === "assistant");
+  const code = streamApp ? streamApp.content : app?.code || ""
+  const language = streamApp ? streamApp.language : app?.language || ""
+  const title = streamApp ? streamApp.filename.name : app?.filename?.name || ""
+  const layout = ["python", "ts", "js", "javascript", "typescript"].includes(language) ? "two-up" : "tabbed"
+
+  const assistantMessages = chat.messages.filter((m: Message) => m.role === "assistant")
   const currentVersion = streamApp
     ? assistantMessages.length
     : message
-      ? assistantMessages.map((m) => m.id).indexOf(message.id)
-      : 1;
-  const previousMessage =
-    currentVersion !== 0 ? assistantMessages.at(currentVersion - 1) : undefined;
-  const nextMessage =
-    currentVersion < assistantMessages.length
-      ? assistantMessages.at(currentVersion + 1)
-      : undefined;
+      ? assistantMessages.map((m: Message) => m.id).indexOf(message.id)
+      : 1
+  const previousMessage = currentVersion !== 0 ? assistantMessages.at(currentVersion - 1) : undefined
+  const nextMessage = currentVersion < assistantMessages.length ? assistantMessages.at(currentVersion + 1) : undefined
 
-  const [refresh, setRefresh] = useState(0);
+  const [refresh, setRefresh] = useState(0)
 
   return (
     <>
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-300 px-4">
         <div className="inline-flex items-center gap-4">
-          <button
-            className="text-gray-400 hover:text-gray-700"
-            onClick={onClose}
-          >
+          <button className="text-gray-400 hover:text-gray-700" onClick={onClose}>
             <CloseIcon className="size-5" />
           </button>
           <span>
@@ -124,12 +107,7 @@ export default function CodeViewer({
             <>
               {language && (
                 <div className="flex h-full items-center justify-center">
-                  <CodeRunner
-                    onRequestFix={onRequestFix}
-                    language={language}
-                    code={code}
-                    key={refresh}
-                  />
+                  <CodeRunner onRequestFix={onRequestFix} language={language} code={code} key={refresh} />
                 </div>
               )}
             </>
@@ -144,12 +122,7 @@ export default function CodeViewer({
             <div className="border-t border-gray-300 px-4 py-4">Output</div>
             <div className="flex grow items-center justify-center border-t">
               {!streamAppIsGenerating && (
-                <CodeRunner
-                  onRequestFix={onRequestFix}
-                  language={language}
-                  code={code}
-                  key={refresh}
-                />
+                <CodeRunner onRequestFix={onRequestFix} language={language} code={code} key={refresh} />
               )}
             </div>
           </div>
@@ -169,10 +142,7 @@ export default function CodeViewer({
         </div>
         <div className="flex items-center justify-end gap-3">
           {previousMessage ? (
-            <button
-              className="text-gray-900"
-              onClick={() => onMessageChange(previousMessage)}
-            >
+            <button className="text-gray-900" onClick={() => onMessageChange(previousMessage)}>
               <ChevronLeftIcon className="size-4" />
             </button>
           ) : (
@@ -182,18 +152,12 @@ export default function CodeViewer({
           )}
 
           <p className="text-sm">
-            Version <span className="tabular-nums">{currentVersion + 1}</span>{" "}
-            <span className="text-gray-400">of</span>{" "}
-            <span className="tabular-nums">
-              {Math.max(currentVersion + 1, assistantMessages.length)}
-            </span>
+            Version <span className="tabular-nums">{currentVersion + 1}</span> <span className="text-gray-400">of</span>{" "}
+            <span className="tabular-nums">{Math.max(currentVersion + 1, assistantMessages.length)}</span>
           </p>
 
           {nextMessage ? (
-            <button
-              className="text-gray-900"
-              onClick={() => onMessageChange(nextMessage)}
-            >
+            <button className="text-gray-900" onClick={() => onMessageChange(nextMessage)}>
               <ChevronRightIcon className="size-4" />
             </button>
           ) : (
@@ -204,5 +168,6 @@ export default function CodeViewer({
         </div>
       </div>
     </>
-  );
+  )
 }
+
