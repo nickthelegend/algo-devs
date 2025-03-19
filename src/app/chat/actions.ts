@@ -5,6 +5,17 @@ import { getMainCodingPrompt, screenshotToCodePrompt, softwareArchitectPrompt } 
 import { notFound } from "next/navigation"
 import Together from "together-ai"
 
+// Define Message type for use throughout the file
+type Message = {
+  id: string
+  role: string
+  content: string
+  position: number
+  chatId: string
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export async function createChat(
   prompt: string,
   model: string,
@@ -155,17 +166,6 @@ export async function createChat(
     },
   })
 
-  // Define the type for message objects
-  type Message = {
-    id: string
-    role: string
-    content: string
-    position: number
-    chatId: string
-    createdAt?: Date
-    updatedAt?: Date
-  }
-
   const lastMessage = newChat.messages.sort((a: Message, b: Message) => a.position - b.position).at(-1)
   if (!lastMessage) throw new Error("No new message")
 
@@ -183,7 +183,7 @@ export async function createMessage(chatId: string, text: string, role: "assista
   })
   if (!chat) notFound()
 
-  const maxPosition = Math.max(...chat.messages.map((m) => m.position))
+  const maxPosition = Math.max(...chat.messages.map((m: Message) => m.position))
 
   const newMessage = await prisma.message.create({
     data: {
