@@ -1,13 +1,9 @@
-"use server";
+"use server"
 
-import { getPrisma } from "@/lib/prisma";
-import {
-  getMainCodingPrompt,
-  screenshotToCodePrompt,
-  softwareArchitectPrompt,
-} from "@/lib/prompts";
-import { notFound } from "next/navigation";
-import Together from "together-ai";
+import { getPrisma } from "@/lib/prisma"
+import { getMainCodingPrompt, screenshotToCodePrompt, softwareArchitectPrompt } from "@/lib/prompts"
+import { notFound } from "next/navigation"
+import Together from "together-ai"
 
 export async function createChat(
   prompt: string,
@@ -15,7 +11,7 @@ export async function createChat(
   quality: "high" | "low",
   screenshotUrl: string | undefined,
 ) {
-  const prisma = getPrisma();
+  const prisma = getPrisma()
   const chat = await prisma.chat.create({
     data: {
       model,
@@ -24,20 +20,20 @@ export async function createChat(
       title: "",
       shadcn: true,
     },
-  });
+  })
 
-  let options: ConstructorParameters<typeof Together>[0] = {};
+  const options: ConstructorParameters<typeof Together>[0] = {}
   if (process.env.HELICONE_API_KEY) {
-    options.baseURL = "https://together.helicone.ai/v1";
+    options.baseURL = "https://together.helicone.ai/v1"
     options.defaultHeaders = {
       "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
       "Helicone-Property-appname": "LlamaCoder",
       "Helicone-Session-Id": chat.id,
       "Helicone-Session-Name": "LlamaCoder Chat",
-    };
+    }
   }
 
-  const together = new Together(options);
+  const together = new Together(options)
 
   async function fetchTitle() {
     const responseForChatTitle = await together.chat.completions.create({
@@ -53,9 +49,9 @@ export async function createChat(
           content: prompt,
         },
       ],
-    });
-    const title = responseForChatTitle.choices[0].message?.content || prompt;
-    return title;
+    })
+    const title = responseForChatTitle.choices[0].message?.content || prompt
+    return title
   }
 
   async function fetchTopExample() {
@@ -77,19 +73,15 @@ export async function createChat(
           content: prompt,
         },
       ],
-    });
+    })
 
-    const mostSimilarExample =
-      findSimilarExamples.choices[0].message?.content || "none";
-    return mostSimilarExample;
+    const mostSimilarExample = findSimilarExamples.choices[0].message?.content || "none"
+    return mostSimilarExample
   }
 
-  const [title, mostSimilarExample] = await Promise.all([
-    fetchTitle(),
-    fetchTopExample(),
-  ]);
+  const [title, mostSimilarExample] = await Promise.all([fetchTitle(), fetchTopExample()])
 
-  let fullScreenshotDescription;
+  let fullScreenshotDescription
   if (screenshotUrl) {
     const screenshotResponse = await together.chat.completions.create({
       model: "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
@@ -109,14 +101,14 @@ export async function createChat(
           ],
         },
       ],
-    });
+    })
 
-    fullScreenshotDescription = screenshotResponse.choices[0].message?.content;
+    fullScreenshotDescription = screenshotResponse.choices[0].message?.content
   }
 
-  let userMessage: string;
+  let userMessage: string
   if (quality === "high") {
-    let initialRes = await together.chat.completions.create({
+    const initialRes = await together.chat.completions.create({
       model: "Qwen/Qwen2.5-Coder-32B-Instruct",
       messages: [
         {
@@ -125,26 +117,21 @@ export async function createChat(
         },
         {
           role: "user",
-          content: fullScreenshotDescription
-            ? fullScreenshotDescription + prompt
-            : prompt,
+          content: fullScreenshotDescription ? fullScreenshotDescription + prompt : prompt,
         },
       ],
       temperature: 0.2,
       max_tokens: 3000,
-    });
+    })
 
-    userMessage = initialRes.choices[0].message?.content ?? prompt;
+    userMessage = initialRes.choices[0].message?.content ?? prompt
   } else if (fullScreenshotDescription) {
-    userMessage =
-      prompt +
-      "RECREATE THIS APP AS CLOSELY AS POSSIBLE: " +
-      fullScreenshotDescription;
+    userMessage = prompt + "RECREATE THIS APP AS CLOSELY AS POSSIBLE: " + fullScreenshotDescription
   } else {
-    userMessage = prompt;
+    userMessage = prompt
   }
 
-  let newChat = await prisma.chat.update({
+  const newChat = await prisma.chat.update({
     where: {
       id: chat.id,
     },
@@ -166,32 +153,37 @@ export async function createChat(
     include: {
       messages: true,
     },
-  });
+  })
 
-  const lastMessage = newChat.messages
-    .sort((a, b) => a.position - b.position)
-    .at(-1);
-  if (!lastMessage) throw new Error("No new message");
+  // Define the type for message objects
+  type Message = {
+    id: string
+    role: string
+    content: string
+    position: number
+    chatId: string
+    createdAt?: Date
+    updatedAt?: Date
+  }
+
+  const lastMessage = newChat.messages.sort((a: Message, b: Message) => a.position - b.position).at(-1)
+  if (!lastMessage) throw new Error("No new message")
 
   return {
     chatId: chat.id,
     lastMessageId: lastMessage.id,
-  };
+  }
 }
 
-export async function createMessage(
-  chatId: string,
-  text: string,
-  role: "assistant" | "user",
-) {
-  const prisma = getPrisma();
+export async function createMessage(chatId: string, text: string, role: "assistant" | "user") {
+  const prisma = getPrisma()
   const chat = await prisma.chat.findUnique({
     where: { id: chatId },
     include: { messages: true },
-  });
-  if (!chat) notFound();
+  })
+  if (!chat) notFound()
 
-  const maxPosition = Math.max(...chat.messages.map((m) => m.position));
+  const maxPosition = Math.max(...chat.messages.map((m) => m.position))
 
   const newMessage = await prisma.message.create({
     data: {
@@ -200,7 +192,8 @@ export async function createMessage(
       position: maxPosition + 1,
       chatId,
     },
-  });
+  })
 
-  return newMessage;
+  return newMessage
 }
+
