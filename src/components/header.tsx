@@ -21,7 +21,7 @@ const baseNavigationItems = [
 const walletRequiredItems = [
   { name: "Bounties", href: "/bounties" },
   { name: "Projects", href: "/projects" },
-  { name: "AI", href: "/chat" },
+  // { name: "AI", href: "/chat" },
 ]
 
 export function Header() {
