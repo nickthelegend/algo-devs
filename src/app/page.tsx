@@ -14,6 +14,15 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
 )
 
+// Define Project interface
+interface Project {
+  id: number
+  name: string
+  description: string
+  stage?: string
+  created_at: string
+}
+
 const tags = ["Smart Contracts", "DeFi", "NFTs", "Web3", "Blockchain", "dApps", "AI", "Development"]
 
 const features = [
@@ -42,7 +51,7 @@ const stats = [
 ]
 
 export default function Home() {
-  const [projects, setProjects] = useState([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
   // Refs for scroll animations

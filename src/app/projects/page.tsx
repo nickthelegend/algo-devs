@@ -29,6 +29,20 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
 )
 
+// Define Project interface
+interface Project {
+  id: number
+  name: string
+  description: string
+  stage: string
+  category: string
+  teamSize: number
+  roles: string[]
+  createdBy: string
+  creatorAddress: string
+  created_at: string
+}
+
 // Project stages
 const projectStages = ["Idea Stage", "Proof of Concept", "Building MVP", "Beta Testing", "Launched"]
 
@@ -52,7 +66,7 @@ const projectCategories = [
 export default function ProjectsPage() {
   const { activeAccount } = useWallet()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [projects, setProjects] = useState([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
@@ -199,7 +213,7 @@ export default function ProjectsPage() {
     })
   }
 
-  const removeRoleField = (index) => {
+  const removeRoleField = (index: number) => {
     const updatedRoles = [...formData.roles]
     updatedRoles.splice(index, 1)
     setFormData({
@@ -208,7 +222,7 @@ export default function ProjectsPage() {
     })
   }
 
-  const updateRole = (index, value) => {
+  const updateRole = (index: number, value: string) => {
     const updatedRoles = [...formData.roles]
     updatedRoles[index] = value
     setFormData({
@@ -217,7 +231,7 @@ export default function ProjectsPage() {
     })
   }
 
-  const applyForRole = async (projectId, role) => {
+  const applyForRole = async (projectId: number, role: string) => {
     if (!activeAccount) {
       toast.error("Please connect your wallet to apply for a role", {
         description: "Authentication Required",
@@ -357,7 +371,7 @@ export default function ProjectsPage() {
                   {project.roles && project.roles.length > 0 && (
                     <div className="mt-6 space-y-2">
                       <h4 className="text-sm font-medium text-indigo-300 mb-2">Open Roles:</h4>
-                      {project.roles.map((role) => (
+                      {project.roles.map((role: string) => (
                         <Button
                           key={role}
                           onClick={() => applyForRole(project.id, role)}

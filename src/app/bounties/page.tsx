@@ -32,10 +32,28 @@ const supabase = createClient(
 // Bounty categories
 const bountyCategories = ["Development", "Design", "Content", "Community", "Marketing", "Research", "Testing", "Other"]
 
+// Define the Bounty type
+interface Bounty {
+  id: number
+  title: string
+  description: string
+  organization: string
+  reward: number
+  dueIn: string
+  dueDate: string
+  participants: number
+  featured: boolean
+  status: "active" | "in-review" | "completed"
+  category: string
+  requirements?: string
+  creatorAddress: string
+  created_at: string
+}
+
 export default function BountiesPage() {
   const { activeAccount } = useWallet()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [bounties, setBounties] = useState([])
+  const [bounties, setBounties] = useState<Bounty[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeTab, setActiveTab] = useState("open")
@@ -146,7 +164,7 @@ export default function BountiesPage() {
       // Calculate due days from now
       const dueDate = new Date(formData.dueDate)
       const today = new Date()
-      const diffTime = Math.abs(dueDate - today)
+      const diffTime = Math.abs(dueDate.getTime() - today.getTime())
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       const dueIn = diffDays <= 0 ? "1d" : `${diffDays}d`
 
@@ -197,7 +215,7 @@ export default function BountiesPage() {
     }
   }
 
-  const applyForBounty = async (bountyId) => {
+  const applyForBounty = async (bountyId: number) => {
     if (!activeAccount) {
       toast.error("Please connect your wallet to apply for a bounty", {
         description: "Authentication Required",
@@ -249,7 +267,7 @@ export default function BountiesPage() {
     }
   }
 
-  const formatAlgoAmount = (amount) => {
+  const formatAlgoAmount = (amount: number | string) => {
     return `${amount} ALGO`
   }
 
