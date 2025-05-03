@@ -7,52 +7,42 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Star, Clock, Users, Search, Plus, Loader2, Filter } from "lucide-react"
 import { useWallet } from "@txnlab/use-wallet-react"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createClient } from "@supabase/supabase-js"
 import { toast } from "sonner"
-import { Switch } from "@/components/ui/switch"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 // Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-)
+const supabase =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+    : null
 
 // Bounty categories
 const bountyCategories = ["Development", "Design", "Content", "Community", "Marketing", "Research", "Testing", "Other"]
 
 // Define the Bounty type
 interface Bounty {
-  id: number
+  id: string
   title: string
   description: string
   organization: string
   reward: number
-  dueIn: string
-  dueDate: string
+  duein: string
+  duedate: string
   participants: number
   featured: boolean
   status: "active" | "in-review" | "completed"
   category: string
   requirements?: string
-  creatorAddress: string
+  creatoraddress: string
   created_at: string
 }
 
 export default function BountiesPage() {
   const { activeAccount } = useWallet()
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const router = useRouter()
   const [bounties, setBounties] = useState<Bounty[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -63,32 +53,26 @@ export default function BountiesPage() {
     totalValue: 0,
     totalBounties: 0,
   })
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    organization: "",
-    reward: 100,
-    dueDate: "",
-    category: bountyCategories[0],
-    requirements: "",
-    featured: false,
-  })
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     fetchBounties()
     fetchStats()
-  }, [activeTab])
+  }, [activeTab, selectedCategory])
 
   async function fetchStats() {
     try {
+      if (!supabase) {
+        toast.error("Database connection not available")
+        return
+      }
+
       // Get total bounties count
       const { count: totalBounties } = await supabase.from("bounties").select("*", { count: "exact", head: true })
 
       // Get sum of all rewards
       const { data: rewardData } = await supabase.from("bounties").select("reward")
 
-      const totalValue = rewardData?.reduce((sum, item) => sum + item.reward, 0) || 0
+      const totalValue = rewardData?.reduce((sum, item) => sum + (Number(item.reward) || 0), 0) || 0
 
       setStats({
         totalValue,
@@ -96,12 +80,19 @@ export default function BountiesPage() {
       })
     } catch (error) {
       console.error("Error fetching stats:", error)
+      toast.error("Failed to fetch bounty statistics")
     }
   }
 
   async function fetchBounties() {
     setLoading(true)
     try {
+      if (!supabase) {
+        toast.error("Database connection not available")
+        setLoading(false)
+        return
+      }
+
       let query = supabase.from("bounties").select("*")
 
       // Apply status filter based on active tab
@@ -143,128 +134,8 @@ export default function BountiesPage() {
     fetchBounties()
   }
 
-  const handleCreateBounty = async () => {
-    if (!activeAccount) {
-      toast.error("Please connect your wallet to create a bounty", {
-        description: "Authentication Required",
-      })
-      return
-    }
-
-    // Validation
-    if (!formData.title.trim() || !formData.description.trim() || !formData.dueDate || formData.reward <= 0) {
-      toast.error("Please fill in all required fields with valid values", {
-        description: "Validation Error",
-      })
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      // Calculate due days from now
-      const dueDate = new Date(formData.dueDate)
-      const today = new Date()
-      const diffTime = Math.abs(dueDate.getTime() - today.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      const dueIn = diffDays <= 0 ? "1d" : `${diffDays}d`
-
-      const { data, error } = await supabase
-        .from("bounties")
-        .insert({
-          title: formData.title,
-          organization: formData.organization || activeAccount.name || "Anonymous",
-          description: formData.description,
-          reward: formData.reward,
-          dueIn: dueIn,
-          dueDate: formData.dueDate,
-          participants: 0,
-          featured: formData.featured,
-          status: "active",
-          category: formData.category,
-          requirements: formData.requirements,
-          creatorAddress: activeAccount.address,
-          created_at: new Date().toISOString(),
-        })
-        .select()
-
-      if (error) throw error
-
-      toast.success("Bounty created successfully")
-
-      // Reset form and close modal
-      setFormData({
-        title: "",
-        description: "",
-        organization: "",
-        reward: 100,
-        dueDate: "",
-        category: bountyCategories[0],
-        requirements: "",
-        featured: false,
-      })
-      setIsCreateModalOpen(false)
-
-      // Refresh bounties
-      fetchBounties()
-      fetchStats()
-    } catch (error) {
-      console.error("Error creating bounty:", error)
-      toast.error("Failed to create bounty")
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const applyForBounty = async (bountyId: number) => {
-    if (!activeAccount) {
-      toast.error("Please connect your wallet to apply for a bounty", {
-        description: "Authentication Required",
-      })
-      return
-    }
-
-    try {
-      // Check if already applied
-      const { data: existingApplications } = await supabase
-        .from("bounty_applications")
-        .select("*")
-        .eq("bounty_id", bountyId)
-        .eq("applicant_address", activeAccount.address)
-        .single()
-
-      if (existingApplications) {
-        toast.info("You have already applied for this bounty", {
-          description: "Already Applied",
-        })
-        return
-      }
-
-      // Create application
-      const { error } = await supabase.from("bounty_applications").insert({
-        bounty_id: bountyId,
-        applicant_address: activeAccount.address,
-        applicant_name: activeAccount.name || "Anonymous",
-        status: "pending",
-        created_at: new Date().toISOString(),
-      })
-
-      if (error) throw error
-
-      // Update participants count
-      const { error: updateError } = await supabase.rpc("increment_bounty_participants", {
-        bounty_id: bountyId,
-      })
-
-      if (updateError) throw updateError
-
-      toast.success("Application submitted successfully")
-
-      // Refresh bounties
-      fetchBounties()
-    } catch (error) {
-      console.error("Error applying for bounty:", error)
-      toast.error("Failed to submit application")
-    }
+  const navigateToBounty = (id: string) => {
+    router.push(`/bounty/${id}`)
   }
 
   const formatAlgoAmount = (amount: number | string) => {
@@ -300,13 +171,12 @@ export default function BountiesPage() {
               />
             </div>
             {activeAccount && (
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-12 px-6 font-medium rounded-lg"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                Create Bounty
-              </Button>
+              <Link href="/bounties/create">
+                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white h-12 px-6 font-medium rounded-lg w-full md:w-auto">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Bounty
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -380,162 +250,6 @@ export default function BountiesPage() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Create Bounty Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent className="bg-black/95 border-indigo-400/30 text-white max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white">Create a New Bounty</DialogTitle>
-            <DialogDescription className="text-gray-400">
-              Post a task or challenge for the Algorand community to solve and earn rewards.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="title" className="text-white">
-                Bounty Title
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Enter a clear, descriptive title"
-                className="bg-black/30 border-indigo-400/20"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="description" className="text-white">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe what needs to be done in detail"
-                className="min-h-[120px] bg-black/30 border-indigo-400/20"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="organization" className="text-white">
-                  Organization (Optional)
-                </Label>
-                <Input
-                  id="organization"
-                  value={formData.organization}
-                  onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                  placeholder="Your organization name if applicable"
-                  className="bg-black/30 border-indigo-400/20"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="category" className="text-white">
-                  Category
-                </Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger id="category" className="bg-black/30 border-indigo-400/20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-black/90 border-indigo-400/20">
-                    {bountyCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="reward" className="text-white">
-                  Reward (ALGO)
-                </Label>
-                <Input
-                  id="reward"
-                  type="number"
-                  min="1"
-                  value={formData.reward}
-                  onChange={(e) => setFormData({ ...formData, reward: Number.parseFloat(e.target.value) || 0 })}
-                  className="bg-black/30 border-indigo-400/20"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="dueDate" className="text-white">
-                  Due Date
-                </Label>
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  className="bg-black/30 border-indigo-400/20"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2">
-              <Label htmlFor="requirements" className="text-white">
-                Submission Requirements
-              </Label>
-              <Textarea
-                id="requirements"
-                value={formData.requirements}
-                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                placeholder="Specify what the submission should include"
-                className="min-h-[100px] bg-black/30 border-indigo-400/20"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="featured"
-                  checked={formData.featured}
-                  onCheckedChange={(checked) => setFormData({ ...formData, featured: checked })}
-                />
-                <Label htmlFor="featured" className="text-white cursor-pointer">
-                  Featured Bounty
-                </Label>
-              </div>
-              <span className="text-indigo-300 text-sm">+10 ALGO fee applies</span>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsCreateModalOpen(false)}
-              className="border-indigo-400/20 text-white"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateBounty}
-              disabled={submitting}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Bounty"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   )
 
@@ -554,13 +268,12 @@ export default function BountiesPage() {
           <h3 className="text-xl font-medium text-white mb-2">No bounties found</h3>
           <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
           {activeAccount && (
-            <Button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Create a New Bounty
-            </Button>
+            <Link href="/bounties/create">
+              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                Create a New Bounty
+              </Button>
+            </Link>
           )}
         </div>
       )
@@ -571,7 +284,8 @@ export default function BountiesPage() {
         {bounties.map((bounty) => (
           <Card
             key={bounty.id}
-            className="bg-black/40 border-indigo-400/20 hover:border-indigo-400/50 transition-all overflow-hidden"
+            className="bg-black/40 border-indigo-400/20 hover:border-indigo-400/50 transition-all overflow-hidden cursor-pointer"
+            onClick={() => navigateToBounty(bounty.id)}
           >
             <div className="p-6">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -586,7 +300,7 @@ export default function BountiesPage() {
                     </Badge>
                     <div className="flex items-center gap-2 text-indigo-300">
                       <Clock className="h-4 w-4" />
-                      <span>Due in {bounty.dueIn}</span>
+                      <span>Due in {bounty.duein}</span>
                     </div>
                     <div className="flex items-center gap-2 text-indigo-300">
                       <Users className="h-4 w-4" />
@@ -631,7 +345,10 @@ export default function BountiesPage() {
 
                   {bounty.status === "active" && activeAccount && (
                     <Button
-                      onClick={() => applyForBounty(bounty.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        router.push(`/bounty/${bounty.id}/apply`)
+                      }}
                       className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white w-full md:w-auto mt-4 md:mt-0"
                     >
                       Apply for Bounty
@@ -646,4 +363,3 @@ export default function BountiesPage() {
     )
   }
 }
-
