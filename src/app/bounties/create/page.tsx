@@ -137,7 +137,7 @@ export default function CreateBountyPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Enter a clear, descriptive title"
-                  className="bg-black/30 border-indigo-400/20"
+                  className="bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -151,7 +151,7 @@ export default function CreateBountyPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe what needs to be done in detail"
-                  className="min-h-[120px] bg-black/30 border-indigo-400/20"
+                  className="min-h-[120px] bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -166,7 +166,7 @@ export default function CreateBountyPage() {
                     value={formData.organization}
                     onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
                     placeholder="Your organization name if applicable"
-                    className="bg-black/30 border-indigo-400/20"
+                    className="bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                   />
                 </div>
 
@@ -179,7 +179,7 @@ export default function CreateBountyPage() {
                     onValueChange={(value) => setFormData({ ...formData, category: value })}
                     required
                   >
-                    <SelectTrigger id="category" className="bg-black/30 border-indigo-400/20">
+                    <SelectTrigger id="category" className="bg-black/30 border-indigo-400/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-black/90 border-indigo-400/20 text-white">
@@ -208,7 +208,7 @@ export default function CreateBountyPage() {
                     min="1"
                     value={formData.reward}
                     onChange={(e) => setFormData({ ...formData, reward: Number.parseFloat(e.target.value) || 0 })}
-                    className="bg-black/30 border-indigo-400/20"
+                    className="bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                     required
                   />
                 </div>
@@ -251,7 +251,7 @@ export default function CreateBountyPage() {
                   value={formData.requirements}
                   onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                   placeholder="Specify what the submission should include"
-                  className="min-h-[100px] bg-black/30 border-indigo-400/20"
+                  className="min-h-[100px] bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                 />
               </div>
 
