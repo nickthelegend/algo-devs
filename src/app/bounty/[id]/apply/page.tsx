@@ -1,15 +1,13 @@
 import { supabase } from "@/lib/supabase"
 
-// Define the correct type for params
+// Define the correct type for params in Next.js 15
 interface PageParams {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }
 
 export default async function ApplyToBountyPage({ params }: PageParams) {
   // Get the bounty ID from the route params
-  const { id } = params
+  const { id } = await params
 
   // Fetch the bounty data from Supabase
   const { data: bounty, error } = await supabase.from("bounties").select("*").eq("id", id).single()
