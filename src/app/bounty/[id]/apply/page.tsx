@@ -9,7 +9,7 @@ export default async function ApplyToBountyPage({ params }: PageParams) {
   // Get the bounty ID from the route params
   const { id } = await params
 
-  // Fetch the bounty data from Supabase
+  // Fetch the bounty data from Supabas
   const { data: bounty, error } = await supabase.from("bounties").select("*").eq("id", id).single()
 
   if (error) {
