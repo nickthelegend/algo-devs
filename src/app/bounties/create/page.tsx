@@ -1,14 +1,12 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createClient } from "@supabase/supabase-js"
 import { toast } from "sonner"
 import { Switch } from "@/components/ui/switch"
 import { format, addDays } from "date-fns"
@@ -18,18 +16,18 @@ import { CalendarIcon, Loader2, ArrowLeft } from "lucide-react"
 import { useWallet } from "@txnlab/use-wallet-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { AlgorandClient } from "@algorandfoundation/algokit-utils"
+import { BountyFactory } from "@/contracts/BountyClient"
+import { BountyClient } from "@/contracts/BountyClient"
+import { BountyManagerClient } from "@/contracts/BountyManagerClient"
+import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount"
 
-// Initialize Supabase client
-const supabase =
-  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    : null
 
 // Bounty categories
 const bountyCategories = ["Development", "Design", "Content", "Community", "Marketing", "Research", "Testing", "Other"]
 
 export default function CreateBountyPage() {
-  const { activeAccount } = useWallet()
+  const { activeAccount,transactionSigner } = useWallet()
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 7)) // Default to 7 days from now
@@ -42,7 +40,6 @@ export default function CreateBountyPage() {
     requirements: "",
     featured: false,
   })
-
   const handleCreateBounty = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -63,50 +60,99 @@ export default function CreateBountyPage() {
 
     setSubmitting(true)
     try {
-      if (!supabase) {
-        toast.error("Database connection not available")
-        return
-      }
+      const activeAddress = activeAccount.address
 
-      // Calculate due days from now
-      const today = new Date()
-      const diffTime = Math.abs(date.getTime() - today.getTime())
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      const dueIn = diffDays <= 0 ? "1d" : `${diffDays}d`
+      // Calculate end time in Unix timestamp (seconds)
+      const endTime = Math.floor(date!.getTime() / 1000)
 
-      // Format date to match the database schema (YYYY-MM-DD)
-      const formattedDate = format(date, "yyyy-MM-dd")
+      // Generate a unique bounty ID
+      const bountyId = Math.floor(Math.random() * 1000000000)
 
-      // Insert data according to to the database schema
-      const { data, error } = await supabase
-        .from("bounties")
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          organization: formData.organization || activeAccount.name || "Anonymous",
-          reward: formData.reward,
-          duein: dueIn, // lowercase field name as per schema
-          duedate: formattedDate, // lowercase field name as per schema
-          participants: 0,
-          featured: formData.featured,
-          status: "active",
-          category: formData.category,
-          requirements: formData.requirements,
-          creatoraddress: activeAccount.address, // lowercase field name as per schema
-          creatorAddress: activeAccount.address, // quoted field name as per schema
-          created_at: new Date().toISOString(),
+      // Initialize Algorand client
+      const algorand = AlgorandClient.fromConfig({
+        algodConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
+        },
+        indexerConfig: {
+          server: "https://testnet-api.algonode.cloud",
+          port: "",
+          token: "",
+        },
+      })
+
+      toast.info("Creating bounty application on the blockchain...", { autoClose: false })
+
+      // Create application using BountyFactory
+      const appFactory = new BountyFactory({
+        defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+        algorand,
+      })
+
+      const { result, appClient } = await appFactory.send.create.createApplication({
+        sender: activeAddress,
+        signer: transactionSigner,
+        args: [formData.title, formData.category, BigInt(endTime)],
+      })
+
+      // Get application reference
+      const appID = await appClient.appId
+      const appAddress = await appClient.appAddress.toString()
+
+      toast.info(`Bounty application created with ID: ${appID}`, { autoClose: 2000 })
+
+      // Get the bounty manager client (assuming you have a manager app with a fixed ID)
+      const managerClient = algorand.client.getTypedAppClientById(BountyManagerClient, {
+        appId: BigInt(739893236), // Replace with your actual bounty manager app ID
+        defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+      })
+
+      // Get the bounty client for the newly created app
+      const bountyClient = algorand.client.getTypedAppClientById(BountyClient, {
+        appId: BigInt(appID),
+        defaultSender: activeAddress,
+        defaultSigner: transactionSigner,
+      })
+
+      // Create the bounty on the blockchain
+      await algorand
+        .newGroup()
+        .addAppCallMethodCall(
+          await managerClient.params.createBounty({
+            args: {
+              bountyConfig: {
+                bountyId: BigInt(bountyId),
+                bountyName: formData.title,
+                bountyCategory: formData.category,
+                bountyCreator: activeAddress,
+                bountyImage: "", // Add image URL if you have one
+                bountyCost: BigInt(formData.reward),
+                endTime: BigInt(endTime),
+                submissionCount: BigInt(0),
+                bountyAppId: BigInt(appID),
+              },
+            },
+          }),
+        )
+        .addPayment({
+          sender: activeAddress,
+          receiver: appAddress,
+          amount: AlgoAmount.Algo(3), // Funding the bounty app
+          signer: transactionSigner,
         })
-        .select()
+        // 
+        .send({ populateAppCallResources: true })
 
-      if (error) throw error
-
-      toast.success("Bounty created successfully")
+      toast.success("Bounty created successfully on the blockchain!")
 
       // Redirect to bounties page
       router.push("/bounties")
     } catch (error) {
-      console.error("Error creating bounty:", error)
-      toast.error("Failed to create bounty")
+      console.error("Error creating bounty on blockchain:", error)
+      toast.error("Failed to create bounty on the blockchain")
     } finally {
       setSubmitting(false)
     }
