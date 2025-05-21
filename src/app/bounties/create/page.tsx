@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { format, addDays } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Loader2, ArrowLeft } from "lucide-react"
+import { CalendarIcon, Loader2, ArrowLeft, Upload, ImageIcon, X } from "lucide-react"
 import { useWallet } from "@txnlab/use-wallet-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -21,15 +21,22 @@ import { BountyFactory } from "@/contracts/BountyClient"
 import { BountyClient } from "@/contracts/BountyClient"
 import { BountyManagerClient } from "@/contracts/BountyManagerClient"
 import { AlgoAmount } from "@algorandfoundation/algokit-utils/types/amount"
-
+import Image from "next/image"
+import axios from "axios"
 
 // Bounty categories
 const bountyCategories = ["Development", "Design", "Content", "Community", "Marketing", "Research", "Testing", "Other"]
 
+// Pinata API configuration
+const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY
+const PINATA_SECRET_API_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY
+const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT
+
 export default function CreateBountyPage() {
-  const { activeAccount,transactionSigner } = useWallet()
+  const { activeAccount, transactionSigner } = useWallet()
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [date, setDate] = useState<Date | undefined>(addDays(new Date(), 7)) // Default to 7 days from now
   const [formData, setFormData] = useState({
     title: "",
@@ -39,7 +46,103 @@ export default function CreateBountyPage() {
     category: bountyCategories[0],
     requirements: "",
     featured: false,
+    image: null as File | null,
+    imagePreview: "",
+    ipfsHash: "",
   })
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size too large", {
+        description: "Please select an image smaller than 5MB",
+      })
+      return
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Invalid file type", {
+        description: "Please select an image file",
+      })
+      return
+    }
+
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file)
+
+    setFormData({
+      ...formData,
+      image: file,
+      imagePreview: previewUrl,
+    })
+  }
+
+  const removeImage = () => {
+    if (formData.imagePreview) {
+      URL.revokeObjectURL(formData.imagePreview)
+    }
+
+    setFormData({
+      ...formData,
+      image: null,
+      imagePreview: "",
+      ipfsHash: "",
+    })
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  const uploadToIPFS = async (file: File): Promise<string> => {
+    if (!PINATA_JWT) {
+      throw new Error("Pinata JWT not configured")
+    }
+
+    setUploadingImage(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const metadata = JSON.stringify({
+        name: `bounty-image-${Date.now()}`,
+      })
+      formData.append("pinataMetadata", metadata)
+
+      const options = JSON.stringify({
+        cidVersion: 0,
+      })
+      formData.append("pinataOptions", options)
+
+      const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
+        headers: {
+          Authorization: `Bearer ${PINATA_JWT}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      const ipfsHash = res.data.IpfsHash
+      const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
+
+      toast.success("Image uploaded to IPFS", {
+        description: "Your image has been successfully uploaded",
+      })
+
+      return ipfsUrl
+    } catch (error) {
+      console.error("Error uploading to IPFS:", error)
+      throw new Error("Failed to upload image to IPFS")
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
   const handleCreateBounty = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -60,6 +163,20 @@ export default function CreateBountyPage() {
 
     setSubmitting(true)
     try {
+      // Upload image to IPFS if provided
+      let ipfsUrl = ""
+      if (formData.image) {
+        try {
+          ipfsUrl = await uploadToIPFS(formData.image)
+        } catch (error) {
+          toast.error("Failed to upload image", {
+            description: "Please try again or proceed without an image",
+          })
+          setSubmitting(false)
+          return
+        }
+      }
+
       const activeAddress = activeAccount.address
 
       // Calculate end time in Unix timestamp (seconds)
@@ -128,7 +245,7 @@ export default function CreateBountyPage() {
                 bountyName: formData.title,
                 bountyCategory: formData.category,
                 bountyCreator: activeAddress,
-                bountyImage: "", // Add image URL if you have one
+                bountyImage: ipfsUrl, // Use the IPFS URL for the image
                 bountyCost: BigInt(formData.reward),
                 endTime: BigInt(endTime),
                 submissionCount: BigInt(0),
@@ -143,7 +260,6 @@ export default function CreateBountyPage() {
           amount: AlgoAmount.Algo(3), // Funding the bounty app
           signer: transactionSigner,
         })
-        // 
         .send({ populateAppCallResources: true })
 
       toast.success("Bounty created successfully on the blockchain!")
@@ -200,6 +316,72 @@ export default function CreateBountyPage() {
                   className="min-h-[120px] bg-black/30 border-indigo-400/20 text-white placeholder:text-gray-500"
                   required
                 />
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="image" className="text-white">
+                  Bounty Image
+                </Label>
+                <div className="flex flex-col items-center justify-center border-2 border-dashed border-indigo-400/30 rounded-lg p-6 bg-black/20">
+                  <input
+                    type="file"
+                    id="image"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  {formData.imagePreview ? (
+                    <div className="relative w-full max-w-md">
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                        <Image
+                          src={formData.imagePreview || "/placeholder.svg"}
+                          alt="Bounty image preview"
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="p-3 rounded-full bg-indigo-500/20">
+                        <ImageIcon className="h-8 w-8 text-indigo-400" />
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-300">Drag and drop an image, or</p>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="mt-2 border-indigo-400/30 text-indigo-300 hover:text-indigo-200"
+                          disabled={uploadingImage}
+                        >
+                          {uploadingImage ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Browse Files
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-400">Recommended: 1200×630px or larger. Max size: 5MB.</p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -323,7 +505,7 @@ export default function CreateBountyPage() {
                 </Link>
                 <Button
                   type="submit"
-                  disabled={submitting || !activeAccount}
+                  disabled={submitting || uploadingImage || !activeAccount}
                   className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
                 >
                   {submitting ? (
