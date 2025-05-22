@@ -53,7 +53,7 @@ interface BountyConfig {
   bountyAppId: bigint
 }
 
-// Define the Submission type
+// Update the Submission interface to include a "winner" status
 interface Submission {
   id: string
   submitter: string
@@ -61,6 +61,7 @@ interface Submission {
   submissionTime: Date
   description: string
   status: "pending" | "accepted" | "rejected" | "paid"
+  isWinner?: boolean
   feedback?: string
   attachments?: string[]
 }
@@ -77,6 +78,10 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null)
   const [feedback, setFeedback] = useState("")
   const [sendingReward, setSendingReward] = useState(false)
+
+  // Add a new state to track when setting a winner
+  const [settingWinner, setSettingWinner] = useState(false)
+  const [currentWinnerAddress, setCurrentWinnerAddress] = useState<string | null>(null)
 
   useEffect(() => {
     if (activeAccount) {
@@ -98,7 +103,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
       }
 
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-      const managerAppId = 739935424 // Bounty Manager App ID
+      const managerAppId = 739937829 // Bounty Manager App ID
 
       // Define ABI type for bounty data
       const abiType = algosdk.ABIType.from("(uint64,string,string,string,address,string,uint64,uint64,uint64,uint64)")
@@ -431,6 +436,125 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
     }
   }
 
+  // Add a new function to handle setting a winner
+  const handleSetWinner = async (submission: Submission) => {
+    if (!activeAccount || !bounty) return
+
+    setSettingWinner(true)
+    try {
+      // Initialize Algorand client
+      const algod = new algosdk.Algodv2("", "https://testnet-api.algonode.cloud", "")
+
+      // Get suggested params
+      const suggestedParams = await algod.getTransactionParams().do()
+
+      // Create transaction for the manager app
+      const managerAppId = 739937829 // Bounty Manager App ID
+
+
+      const intialTxn = algosdk.makeApplicationNoOpTxnFromObject({
+        sender: activeAccount.address,
+        appIndex: managerAppId,
+        appArgs: [
+          algosdk
+            .getMethodByName(
+              [
+                new algosdk.ABIMethod({
+                  name: "addDeveloper",
+                  desc: "",
+                  args: [{ type: "address", name: "developer", desc: "" }],
+                  returns: { type: "void", desc: "" },
+                }),
+              ],
+              "addDeveloper",
+            )
+            .getSelector(),
+          algosdk.decodeAddress(submission.submitterAddress).publicKey,
+        ],
+        suggestedParams: { ...suggestedParams },
+        boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAccount.address).publicKey }],
+      })
+
+      const managerTxn = algosdk.makeApplicationNoOpTxnFromObject({
+        sender: activeAccount.address,
+        appIndex: managerAppId,
+        appArgs: [
+          algosdk
+            .getMethodByName(
+              [
+                new algosdk.ABIMethod({
+                  name: "setWinner",
+                  desc: "",
+                  args: [{ type: "address", name: "developer", desc: "" }],
+                  returns: { type: "void", desc: "" },
+                }),
+              ],
+              "setWinner",
+            )
+            .getSelector(),
+          algosdk.decodeAddress(submission.submitterAddress).publicKey,
+        ],
+        suggestedParams: { ...suggestedParams },
+        boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAccount.address).publicKey }],
+      })
+
+      // Create transaction for the bounty app
+      const bountyAppId = Number(bounty.bountyAppId)
+      const bountyTxn = algosdk.makeApplicationNoOpTxnFromObject({
+        sender: activeAccount.address,
+        appIndex: bountyAppId,
+        appArgs: [
+          algosdk
+            .getMethodByName(
+              [
+                new algosdk.ABIMethod({
+                  name: "setWinner",
+                  desc: "",
+                  args: [{ type: "address", name: "winner", desc: "" }],
+                  returns: { type: "void", desc: "" },
+                }),
+              ],
+              "setWinner",
+            )
+            .getSelector(),
+          algosdk.decodeAddress(submission.submitterAddress).publicKey,
+        ],
+        suggestedParams: { ...suggestedParams },
+      })
+
+      // Group the transactions
+      const txns = [intialTxn,managerTxn, bountyTxn]
+      algosdk.assignGroupID(txns)
+
+      toast.info("Setting winner on the blockchain...", { autoClose: false })
+
+      // Sign the transactions
+      const signedTxns = await transactionSigner(txns, [0, 1, 2])
+
+      // Send the signed transactions
+      const { txId } = await algod.sendRawTransaction(signedTxns).do()
+
+      // Wait for confirmation
+      await algosdk.waitForConfirmation(algod, txId, 4)
+
+      // Update the UI
+      setCurrentWinnerAddress(submission.submitterAddress)
+      setSubmissions((prev) =>
+        prev.map((sub) => ({
+          ...sub,
+          isWinner: sub.submitterAddress === submission.submitterAddress,
+        })),
+      )
+
+      toast.success(`${submission.submitter} has been set as the winner!`)
+    } catch (err) {
+      console.error("Error setting winner:", err)
+      toast.error("Failed to set winner")
+    } finally {
+      setSettingWinner(false)
+    }
+  }
+
   const formatAlgoAmount = (amount: bigint | number) => {
     return `${amount} ALGO`
   }
@@ -536,6 +660,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
   const acceptedSubmissions = submissions.filter((sub) => sub.status === "accepted").length
   const paidSubmissions = submissions.filter((sub) => sub.status === "paid").length
 
+  // Update the renderSubmissionsList function to include the Set Winner button
   function renderSubmissionsList(submissionsList: Submission[]) {
     if (submissionsList.length === 0) {
       return (
@@ -548,13 +673,26 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
     return (
       <div className="space-y-4">
         {submissionsList.map((submission) => (
-          <div key={submission.id} className="border border-indigo-400/20 rounded-lg p-4">
+          <div
+            key={submission.id}
+            className={`border ${submission.isWinner ? "border-yellow-400/50" : "border-indigo-400/20"} rounded-lg p-4 ${submission.isWinner ? "bg-yellow-900/10" : ""}`}
+          >
             <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-3">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <User className="h-5 w-5 text-indigo-400" />
                   <span className="text-white">{submission.submitter}</span>
                   <span className="text-gray-400 font-mono text-sm">{`(${submission.submitterAddress.slice(0, 6)}...${submission.submitterAddress.slice(-4)})`}</span>
+                  {submission.isWinner && (
+                    <Badge variant="outline" className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
+                      Winner
+                    </Badge>
+                  )}
+                  {currentWinnerAddress === submission.submitterAddress && (
+                    <Badge variant="outline" className="bg-yellow-500/20 text-yellow-500 border-yellow-500/30">
+                      Winner
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-sm text-gray-400">Submitted on {format(submission.submissionTime, "PPP")}</p>
               </div>
@@ -619,16 +757,36 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
                 </Button>
               )}
 
-              {submission.status === "accepted" && (
+              {submission.status === "accepted" && !submission.isWinner && !currentWinnerAddress && (
                 <Button
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                  onClick={() => handleSendReward(submission)}
-                  disabled={processingAction === submission.id}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                  onClick={() => handleSetWinner(submission)}
+                  disabled={settingWinner}
                 >
-                  <Send className="h-4 w-4 mr-1" /> Send Reward
+                  {settingWinner ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Setting Winner...
+                    </>
+                  ) : (
+                    <>
+                      <Award className="h-4 w-4 mr-1" /> Set as Winner
+                    </>
+                  )}
                 </Button>
               )}
+
+              {(submission.isWinner || currentWinnerAddress === submission.submitterAddress) &&
+                submission.status !== "paid" && (
+                  <Button
+                    size="sm"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    onClick={() => handleSendReward(submission)}
+                    disabled={processingAction === submission.id}
+                  >
+                    <Send className="h-4 w-4 mr-1" /> Send Reward
+                  </Button>
+                )}
 
               {submission.status === "paid" && (
                 <Button size="sm" variant="outline" className="border-indigo-400/20 text-white" disabled>
@@ -892,6 +1050,25 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
 
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-12 w-12 text-indigo-500 animate-spin mb-4" />
+              <p className="text-white text-center">
+                Please wait while we process your transaction on the Algorand blockchain.
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Add a new dialog for setting a winner */}
+        <Dialog open={settingWinner} onOpenChange={(open) => !open && setSettingWinner(false)}>
+          <DialogContent className="bg-black/90 border-indigo-400/30 text-white">
+            <DialogHeader>
+              <DialogTitle>Setting Winner</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Processing blockchain transaction to set the winner.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-12 w-12 text-yellow-500 animate-spin mb-4" />
               <p className="text-white text-center">
                 Please wait while we process your transaction on the Algorand blockchain.
               </p>

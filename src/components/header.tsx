@@ -14,6 +14,8 @@ const baseNavigationItems = [
   { name: "Open Source", href: "/open" },
   { name: "ARCs", href: "/ARCs" },
   { name: "Docs", href: "/docs" },
+  { name: "Leaderboard", href: "/leaderboard" },
+
 ]
 
 // Navigation items only visible when wallet is connected

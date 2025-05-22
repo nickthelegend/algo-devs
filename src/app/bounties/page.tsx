@@ -82,7 +82,7 @@ export default function BountiesPage() {
     setError(null)
     try {
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-      const appId = 739935424 // Bounty Manager App ID
+      const appId = 739937829 // Bounty Manager App ID
 
       // Define ABI type for bounty data
       const abiType = algosdk.ABIType.from("(uint64,string,string,string,address,string,uint64,uint64,uint64,uint64)")
