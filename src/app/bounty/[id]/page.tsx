@@ -375,7 +375,11 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
                   </Button>
                 )}
 
-                {isCreator && <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">Manage Bounty</Button>}
+                {isCreator && (
+                  <Link href={`/bounty/manage/${params.id}`}>
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white">Manage Bounty</Button>
+                  </Link>
+                )}
 
                 <Button variant="outline" className="border-indigo-400/20 text-white">
                   Share
