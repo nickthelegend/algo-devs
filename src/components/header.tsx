@@ -12,7 +12,6 @@ import { useWallet } from "@txnlab/use-wallet-react"
 // Base navigation items always visible
 const baseNavigationItems = [
   { name: "Open Source", href: "/open" },
-  { name: "Learn", href: "/learn" },
   { name: "ARCs", href: "/ARCs" },
   { name: "Docs", href: "/docs" },
 ]
