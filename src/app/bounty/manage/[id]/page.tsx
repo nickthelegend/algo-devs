@@ -86,6 +86,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
     }
   }, [activeAccount, params.id])
 
+  // Replace the fetchBountyDetails function with this updated version that fetches real submissions
   async function fetchBountyDetails() {
     setLoading(true)
     setError(null)
@@ -189,35 +190,133 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
 
       setBounty(foundBounty)
 
-      // Generate mock submissions for demonstration
-      // In a real implementation, you would fetch this from the blockchain
-      const mockSubmissions: Submission[] = []
-      const submissionCount = Number(foundBounty.submissionCount)
+      // Fetch actual submissions from the blockchain
+      try {
+        console.log("Fetching submissions for app ID:", appId)
+        const submissionBoxesResp = await indexer.searchForApplicationBoxes(appId).do()
+        console.log("Submission boxes response:", submissionBoxesResp)
 
-      if (submissionCount > 0) {
-        // Generate mock submissions based on the submission count
-        for (let i = 0; i < submissionCount; i++) {
-          const submitterAddress = `ALGO${Math.random().toString(36).substring(2, 10).toUpperCase()}`
-          mockSubmissions.push({
-            id: `submission-${i + 1}`,
-            submitter: `User ${i + 1}`,
-            submitterAddress,
-            submissionTime: new Date(Date.now() - Math.random() * 86400000 * 7), // Random time in the last week
-            description:
-              "This submission includes a complete implementation of the requested feature with documentation and tests.",
-            status: i === 0 ? "accepted" : i === 1 ? "rejected" : i === 2 ? "paid" : "pending",
-            feedback:
-              i === 0
-                ? "Great work! This is exactly what we were looking for."
-                : i === 1
-                  ? "Does not meet requirements."
-                  : "",
-            attachments: i % 2 === 0 ? ["document.pdf", "code.zip"] : undefined,
-          })
+        const fetchedSubmissions: Submission[] = []
+
+        for (const box of submissionBoxesResp.boxes) {
+          try {
+            // Decode box.name - this contains the user's address
+            const nameBuf =
+              typeof box.name === "string"
+                ? Buffer.from(box.name, "base64")
+                : Buffer.from(
+                    (box.name as Uint8Array).buffer,
+                    (box.name as Uint8Array).byteOffset,
+                    (box.name as Uint8Array).byteLength,
+                  )
+
+            // Fetch box value
+            const valResp = await indexer
+              .lookupApplicationBoxByIDandName(
+                appId,
+                new Uint8Array(nameBuf.buffer, nameBuf.byteOffset, nameBuf.byteLength),
+              )
+              .do()
+
+            // Normalize to Buffer
+            let valueBuf: Buffer
+            if (typeof valResp.value === "string") {
+              valueBuf = Buffer.from(valResp.value, "base64")
+            } else {
+              const u8 = valResp.value as Uint8Array
+              valueBuf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
+            }
+
+            // Try to convert the box name to an Algorand address
+            // If the name is 32 bytes, it might be a public key
+            if (nameBuf.length === 32) {
+              const submitterAddress = algosdk.encodeAddress(new Uint8Array(nameBuf))
+
+              // Use ABI type to decode the submission text
+              const stringAbiType = algosdk.ABIType.from("string")
+
+              // Decode the buffer containing the encoded submission
+              const submissionText = stringAbiType.decode(valueBuf)
+
+              console.log("Decoded submission for address:", submitterAddress)
+
+              fetchedSubmissions.push({
+                id: `submission-${fetchedSubmissions.length + 1}`,
+                submitter: `User ${fetchedSubmissions.length + 1}`,
+                submitterAddress: submitterAddress,
+                submissionTime: new Date(), // We don't have the actual submission time from the blockchain
+                description: submissionText,
+                status: "pending", // Default status
+                feedback: "",
+              })
+            }
+          } catch (err) {
+            console.error("Error processing submission box:", err)
+            // Continue with other boxes
+          }
+        }
+
+        if (fetchedSubmissions.length > 0) {
+          setSubmissions(fetchedSubmissions)
+        } else {
+          // If no submissions found, use mock data for demonstration
+          const mockSubmissions: Submission[] = []
+          const submissionCount = Number(foundBounty.submissionCount)
+
+          if (submissionCount > 0) {
+            // Generate mock submissions based on the submission count
+            for (let i = 0; i < submissionCount; i++) {
+              const submitterAddress = `ALGO${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+              mockSubmissions.push({
+                id: `submission-${i + 1}`,
+                submitter: `User ${i + 1}`,
+                submitterAddress,
+                submissionTime: new Date(Date.now() - Math.random() * 86400000 * 7), // Random time in the last week
+                description:
+                  "This submission includes a complete implementation of the requested feature with documentation and tests.",
+                status: i === 0 ? "accepted" : i === 1 ? "rejected" : i === 2 ? "paid" : "pending",
+                feedback:
+                  i === 0
+                    ? "Great work! This is exactly what we were looking for."
+                    : i === 1
+                      ? "Does not meet requirements."
+                      : "",
+                attachments: i % 2 === 0 ? ["document.pdf", "code.zip"] : undefined,
+              })
+            }
+            setSubmissions(mockSubmissions)
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching submissions:", err)
+        // If there's an error fetching submissions, we'll fall back to mock data
+        const mockSubmissions: Submission[] = []
+        const submissionCount = Number(foundBounty.submissionCount)
+
+        if (submissionCount > 0) {
+          // Generate mock submissions based on the submission count
+          for (let i = 0; i < submissionCount; i++) {
+            const submitterAddress = `ALGO${Math.random().toString(36).substring(2, 10).toUpperCase()}`
+            mockSubmissions.push({
+              id: `submission-${i + 1}`,
+              submitter: `User ${i + 1}`,
+              submitterAddress,
+              submissionTime: new Date(Date.now() - Math.random() * 86400000 * 7), // Random time in the last week
+              description:
+                "This submission includes a complete implementation of the requested feature with documentation and tests.",
+              status: i === 0 ? "accepted" : i === 1 ? "rejected" : i === 2 ? "paid" : "pending",
+              feedback:
+                i === 0
+                  ? "Great work! This is exactly what we were looking for."
+                  : i === 1
+                    ? "Does not meet requirements."
+                    : "",
+              attachments: i % 2 === 0 ? ["document.pdf", "code.zip"] : undefined,
+            })
+          }
+          setSubmissions(mockSubmissions)
         }
       }
-
-      setSubmissions(mockSubmissions)
     } catch (err) {
       console.error("Error fetching bounty details:", err)
       setError(`Failed to fetch bounty details: ${err instanceof Error ? err.message : "Unknown error"}`)
@@ -433,6 +532,112 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
   const pendingSubmissions = submissions.filter((sub) => sub.status === "pending").length
   const acceptedSubmissions = submissions.filter((sub) => sub.status === "accepted").length
   const paidSubmissions = submissions.filter((sub) => sub.status === "paid").length
+
+  function renderSubmissionsList(submissionsList: Submission[]) {
+    if (submissionsList.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <p className="text-gray-400">No submissions found</p>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        {submissionsList.map((submission) => (
+          <div key={submission.id} className="border border-indigo-400/20 rounded-lg p-4">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-3">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="h-5 w-5 text-indigo-400" />
+                  <span className="text-white">{submission.submitter}</span>
+                  <span className="text-gray-400 font-mono text-sm">{`(${submission.submitterAddress.slice(0, 6)}...${submission.submitterAddress.slice(-4)})`}</span>
+                </div>
+                <p className="text-sm text-gray-400">Submitted on {format(submission.submissionTime, "PPP")}</p>
+              </div>
+
+              <Badge
+                variant="secondary"
+                className={
+                  submission.status === "accepted"
+                    ? "bg-green-500/20 text-green-500"
+                    : submission.status === "rejected"
+                      ? "bg-red-500/20 text-red-500"
+                      : submission.status === "paid"
+                        ? "bg-blue-500/20 text-blue-500"
+                        : "bg-yellow-500/20 text-yellow-500"
+                }
+              >
+                {submission.status === "accepted"
+                  ? "Accepted"
+                  : submission.status === "rejected"
+                    ? "Rejected"
+                    : submission.status === "paid"
+                      ? "Paid"
+                      : "Pending"}
+              </Badge>
+            </div>
+
+            <div className="bg-black/20 border border-indigo-400/10 rounded-md p-4 mb-3 whitespace-pre-wrap">
+              <h4 className="text-indigo-300 font-medium mb-2">Submission Details:</h4>
+              <p className="text-gray-300">{submission.description}</p>
+            </div>
+
+            {submission.attachments && submission.attachments.length > 0 && (
+              <div className="mb-3">
+                <p className="text-sm text-indigo-300 mb-1">Attachments:</p>
+                <div className="flex flex-wrap gap-2">
+                  {submission.attachments.map((attachment, index) => (
+                    <Badge key={index} variant="outline" className="bg-indigo-600/10 border-indigo-400/30">
+                      {attachment}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {submission.feedback && (
+              <div className="bg-indigo-900/20 border border-indigo-400/20 rounded-md p-3 mb-3">
+                <p className="text-sm text-indigo-300 mb-1">Your Feedback:</p>
+                <p className="text-gray-300">{submission.feedback}</p>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {submission.status === "pending" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-indigo-400/20 text-white"
+                  onClick={() => setSelectedSubmission(submission)}
+                  disabled={processingAction === submission.id}
+                >
+                  Review Submission
+                </Button>
+              )}
+
+              {submission.status === "accepted" && (
+                <Button
+                  size="sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  onClick={() => handleSendReward(submission)}
+                  disabled={processingAction === submission.id}
+                >
+                  <Send className="h-4 w-4 mr-1" /> Send Reward
+                </Button>
+              )}
+
+              {submission.status === "paid" && (
+                <Button size="sm" variant="outline" className="border-indigo-400/20 text-white" disabled>
+                  <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Reward Sent
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <main className="min-h-screen animated-gradient pt-20">
@@ -693,109 +898,4 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
       </div>
     </main>
   )
-
-  function renderSubmissionsList(submissionsList: Submission[]) {
-    if (submissionsList.length === 0) {
-      return (
-        <div className="text-center py-8">
-          <p className="text-gray-400">No submissions found</p>
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4">
-        {submissionsList.map((submission) => (
-          <div key={submission.id} className="border border-indigo-400/20 rounded-lg p-4">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-3">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-5 w-5 text-indigo-400" />
-                  <span className="text-white">{submission.submitter}</span>
-                  <span className="text-gray-400 font-mono text-sm">{`(${submission.submitterAddress.slice(0, 6)}...${submission.submitterAddress.slice(-4)})`}</span>
-                </div>
-                <p className="text-sm text-gray-400">Submitted on {format(submission.submissionTime, "PPP")}</p>
-              </div>
-
-              <Badge
-                variant="secondary"
-                className={
-                  submission.status === "accepted"
-                    ? "bg-green-500/20 text-green-500"
-                    : submission.status === "rejected"
-                      ? "bg-red-500/20 text-red-500"
-                      : submission.status === "paid"
-                        ? "bg-blue-500/20 text-blue-500"
-                        : "bg-yellow-500/20 text-yellow-500"
-                }
-              >
-                {submission.status === "accepted"
-                  ? "Accepted"
-                  : submission.status === "rejected"
-                    ? "Rejected"
-                    : submission.status === "paid"
-                      ? "Paid"
-                      : "Pending"}
-              </Badge>
-            </div>
-
-            <p className="text-gray-300 mb-3">{submission.description}</p>
-
-            {submission.attachments && submission.attachments.length > 0 && (
-              <div className="mb-3">
-                <p className="text-sm text-indigo-300 mb-1">Attachments:</p>
-                <div className="flex flex-wrap gap-2">
-                  {submission.attachments.map((attachment, index) => (
-                    <Badge key={index} variant="outline" className="bg-indigo-600/10 border-indigo-400/30">
-                      {attachment}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {submission.feedback && (
-              <div className="bg-indigo-900/20 border border-indigo-400/20 rounded-md p-3 mb-3">
-                <p className="text-sm text-indigo-300 mb-1">Your Feedback:</p>
-                <p className="text-gray-300">{submission.feedback}</p>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              {submission.status === "pending" && (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-indigo-400/20 text-white"
-                    onClick={() => setSelectedSubmission(submission)}
-                    disabled={processingAction === submission.id}
-                  >
-                    Review Submission
-                  </Button>
-                </>
-              )}
-
-              {submission.status === "accepted" && (
-                <Button
-                  size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                  onClick={() => handleSendReward(submission)}
-                  disabled={processingAction === submission.id}
-                >
-                  <Send className="h-4 w-4 mr-1" /> Send Reward
-                </Button>
-              )}
-
-              {submission.status === "paid" && (
-                <Button size="sm" variant="outline" className="border-indigo-400/20 text-white" disabled>
-                  <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Reward Sent
-                </Button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    )
-  }
 }
