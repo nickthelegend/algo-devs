@@ -13,11 +13,12 @@ import algosdk from "algosdk"
 import Image from "next/image"
 import { format } from "date-fns"
 
-// Define the BountyConfig type to match the blockchain structure
+// Update the BountyConfig interface to include bountyDescription
 interface BountyConfig {
   bountyId: bigint
   bountyName: string
   bountyCategory: string
+  bountyDescription: string
   bountyCreator: string
   bountyImage: string
   bountyCost: bigint
@@ -58,10 +59,10 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
       }
 
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-      const managerAppId = 739893236 // Bounty Manager App ID
+      const managerAppId = 739935424 // Bounty Manager App ID
 
-      // Define ABI type for bounty data
-      const abiType = algosdk.ABIType.from("(uint64,string,string,address,string,uint64,uint64,uint64,uint64)")
+      // Update the ABI type definition
+      const abiType = algosdk.ABIType.from("(uint64,string,string,string,address,string,uint64,uint64,uint64,uint64)")
 
       // Search for the specific bounty in the manager's boxes
       const boxesResp = await indexer.searchForApplicationBoxes(managerAppId).do()
@@ -101,17 +102,19 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
             buf = Buffer.from(u8.buffer, u8.byteOffset, u8.byteLength)
           }
 
+          // Update the ABI Decode section in fetchBountyDetails function
           // ABI Decode with bounty structure
           const decodedTuple = abiType.decode(buf) as [
             bigint, // 0: BountyID
             string, // 1: BountyName
             string, // 2: BountyCategory
-            string, // 3: BountyCreator (address)
-            string, // 4: BountyImage
-            bigint, // 5: BountyCost
-            bigint, // 6: EndTime
-            bigint, // 7: SubmissionCount
-            bigint, // 8: BountyAppID
+            string, // 3: BountyDescription
+            string, // 4: BountyCreator (address)
+            string, // 5: BountyImage
+            bigint, // 6: BountyCost
+            bigint, // 7: EndTime
+            bigint, // 8: SubmissionCount
+            bigint, // 9: BountyAppID
           ]
 
           // Map to BountyConfig
@@ -119,12 +122,13 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
             bountyId: decodedTuple[0],
             bountyName: decodedTuple[1],
             bountyCategory: decodedTuple[2],
-            bountyCreator: decodedTuple[3],
-            bountyImage: decodedTuple[4],
-            bountyCost: decodedTuple[5],
-            endTime: decodedTuple[6],
-            submissionCount: decodedTuple[7],
-            bountyAppId: decodedTuple[8],
+            bountyDescription: decodedTuple[3],
+            bountyCreator: decodedTuple[4],
+            bountyImage: decodedTuple[5],
+            bountyCost: decodedTuple[6],
+            endTime: decodedTuple[7],
+            submissionCount: decodedTuple[8],
+            bountyAppId: decodedTuple[9],
           }
 
           // Check if this is the bounty we're looking for
@@ -401,13 +405,14 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
           </TabsList>
 
           <TabsContent value="details" className="mt-6">
+            {/* Update the Details tab content to display the bounty description */}
             <Card className="bg-black/40 border-indigo-400/20">
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold text-white mb-4">Bounty Description</h2>
                 <div className="prose prose-invert max-w-none">
                   <p className="text-gray-300">
-                    This bounty is looking for developers to implement the requested functionality according to the
-                    specifications. The solution should be well-documented and include comprehensive tests.
+                    {bounty.bountyDescription ||
+                      "This bounty is looking for developers to implement the requested functionality according to the specifications. The solution should be well-documented and include comprehensive tests."}
                   </p>
 
                   <h3 className="text-lg font-semibold text-white mt-6 mb-2">Requirements</h3>

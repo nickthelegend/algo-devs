@@ -21,6 +21,7 @@ interface BountyConfig {
   bountyId: bigint
   bountyName: string
   bountyCategory: string
+  bountyDescription: string
   bountyCreator: string
   bountyImage: string
   bountyCost: bigint
@@ -81,10 +82,10 @@ export default function BountiesPage() {
     setError(null)
     try {
       const indexer = new algosdk.Indexer("", "https://testnet-idx.algonode.cloud", "")
-      const appId = 739893236 // Bounty Manager App ID
+      const appId = 739935424 // Bounty Manager App ID
 
       // Define ABI type for bounty data
-      const abiType = algosdk.ABIType.from("(uint64,string,string,address,string,uint64,uint64,uint64,uint64)")
+      const abiType = algosdk.ABIType.from("(uint64,string,string,string,address,string,uint64,uint64,uint64,uint64)")
 
       // Search for application boxes
       const boxesResp = await indexer.searchForApplicationBoxes(appId).do()
@@ -145,12 +146,13 @@ export default function BountiesPage() {
             bigint, // 0: BountyID
             string, // 1: BountyName
             string, // 2: BountyCategory
-            string, // 3: BountyCreator (address)
-            string, // 4: BountyImage
-            bigint, // 5: BountyCost
-            bigint, // 6: EndTime
-            bigint, // 7: SubmissionCount
-            bigint, // 8: BountyAppID
+            string, // 3: BountyDescription
+            string, // 4: BountyCreator (address)
+            string, // 5: BountyImage
+            bigint, // 6: BountyCost
+            bigint, // 7: EndTime
+            bigint, // 8: SubmissionCount
+            bigint, // 9: BountyAppID
           ]
 
           // Map to BountyConfig
@@ -158,12 +160,13 @@ export default function BountiesPage() {
             bountyId: decodedTuple[0],
             bountyName: decodedTuple[1],
             bountyCategory: decodedTuple[2],
-            bountyCreator: decodedTuple[3],
-            bountyImage: decodedTuple[4],
-            bountyCost: decodedTuple[5],
-            endTime: decodedTuple[6],
-            submissionCount: decodedTuple[7],
-            bountyAppId: decodedTuple[8],
+            bountyDescription: decodedTuple[3],
+            bountyCreator: decodedTuple[4],
+            bountyImage: decodedTuple[5],
+            bountyCost: decodedTuple[6],
+            endTime: decodedTuple[7],
+            submissionCount: decodedTuple[8],
+            bountyAppId: decodedTuple[9],
           }
 
           console.log("Decoded bounty:", bountyConfig)
@@ -206,7 +209,7 @@ export default function BountiesPage() {
           const uiBounty: Bounty = {
             id: bountyConfig.bountyId.toString(),
             title: bountyConfig.bountyName,
-            description: "Bounty on Algorand blockchain", // Default description
+            description: bountyConfig.bountyDescription, // Use the actual description from blockchain
             organization: "", // We don't have this in the blockchain data
             reward: Number(bountyConfig.bountyCost),
             duein: dueIn,
@@ -446,6 +449,7 @@ export default function BountiesPage() {
                   <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
                     {bounty.title}
                   </h3>
+                  {bounty.description && <p className="text-gray-300 mb-4 line-clamp-2">{bounty.description}</p>}
                   {bounty.organization && <p className="text-gray-300 mb-4">{bounty.organization}</p>}
                   <div className="flex flex-wrap items-center gap-3 mb-4">
                     <Badge variant="outline" className="bg-indigo-600/20 text-white border-indigo-400/30">

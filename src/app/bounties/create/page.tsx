@@ -222,7 +222,7 @@ export default function CreateBountyPage() {
 
       // Get the bounty manager client (assuming you have a manager app with a fixed ID)
       const managerClient = algorand.client.getTypedAppClientById(BountyManagerClient, {
-        appId: BigInt(739893236), // Replace with your actual bounty manager app ID
+        appId: BigInt(739935424), // Replace with your actual bounty manager app ID
         defaultSender: activeAddress,
         defaultSigner: transactionSigner,
       })
@@ -244,6 +244,7 @@ export default function CreateBountyPage() {
                 bountyId: BigInt(bountyId),
                 bountyName: formData.title,
                 bountyCategory: formData.category,
+                bountyDescription: formData.description,
                 bountyCreator: activeAddress,
                 bountyImage: ipfsUrl, // Use the IPFS URL for the image
                 bountyCost: BigInt(formData.reward),
