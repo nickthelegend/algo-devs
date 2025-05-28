@@ -14,7 +14,11 @@ const baseNavigationItems = [
   { name: "Open Source", href: "/open" },
   { name: "ARCs", href: "/ARCs" },
   { name: "Docs", href: "/docs" },
+  { name: "Learn", href: "/learn" },
+
   { name: "Leaderboard", href: "/leaderboard" },
+  
+
 
 ]
 
