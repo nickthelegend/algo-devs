@@ -153,14 +153,14 @@ export default function ProjectsPage() {
             <Button
               variant={showMyProjects ? "default" : "outline"}
               onClick={toggleMyProjects}
-              className={`${showMyProjects ? "bg-[#1e1033] text-white" : "bg-white text-black"} border-0 font-medium`}
+              className={`${showMyProjects ? "bg-[#1e1033] text-white" : "bg-white text-black"} border-0 font-medium h-12 px-6 rounded-lg`}
               disabled={!activeAccount}
             >
               MY PROJECTS
             </Button>
 
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] bg-white text-black border-0 h-11 rounded-lg">
+              <SelectTrigger className="w-auto min-w-[140px] bg-white text-black border-0 h-12 rounded-lg px-4">
                 <SelectValue placeholder="CATEGORY" />
               </SelectTrigger>
               <SelectContent className="bg-white border-0">
@@ -174,7 +174,7 @@ export default function ProjectsPage() {
             </Select>
 
             <Select value={selectedTeamSize} onValueChange={setSelectedTeamSize}>
-              <SelectTrigger className="w-[180px] bg-white text-black border-0 h-11 rounded-lg">
+              <SelectTrigger className="w-auto min-w-[140px] bg-white text-black border-0 h-12 rounded-lg px-4">
                 <SelectValue placeholder="TEAM SIZE" />
               </SelectTrigger>
               <SelectContent className="bg-white border-0">
@@ -185,7 +185,11 @@ export default function ProjectsPage() {
               </SelectContent>
             </Select>
 
-            <Button variant="outline" onClick={handleSearch} className="bg-white text-black border-0">
+            <Button
+              variant="outline"
+              onClick={handleSearch}
+              className="bg-white text-black border-0 h-12 px-6 rounded-lg"
+            >
               <Search className="h-4 w-4 mr-2" />
               Search
             </Button>
