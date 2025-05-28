@@ -2,38 +2,25 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Book, Code, Terminal, ArrowRight } from "lucide-react"
-import Link from "next/link"
 
 const sections = [
   {
     title: "Getting Started",
     description: "Learn the basics of Algorand development",
     icon: Book,
-    links: [
-      { name: "Quick Start", href: "/docs/quick-start" },
-      { name: "Installation", href: "/docs/installation" },
-      { name: "Basic Concepts", href: "/docs/basic-concepts" },
-    ],
+    links: ["Quick Start", "Installation", "Basic Concepts"],
   },
   {
     title: "Smart Contracts",
     description: "Build and deploy smart contracts on Algorand",
     icon: Code,
-    links: [
-      { name: "Overview", href: "/docs/smart-contracts/overview" },
-      { name: "TEAL", href: "/docs/smart-contracts/teal" },
-      { name: "Algorand Virtual Machine", href: "/docs/smart-contracts/avm" },
-    ],
+    links: ["TEAL", "PyTeal", "Best Practices"],
   },
   {
     title: "SDKs & APIs",
     description: "Integrate Algorand into your applications",
     icon: Terminal,
-    links: [
-      { name: "Python SDK", href: "/docs/sdks-apis/python-sdk" },
-      { name: "TypeScript SDK", href: "/docs/sdks-apis/typescript-sdk" },
-      { name: "REST APIs", href: "/docs/sdks-apis/rest-apis" },
-    ],
+    links: ["JavaScript SDK", "Python SDK", "REST APIs"],
   },
 ]
 
@@ -55,10 +42,7 @@ export default function DocsPage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sections.map((section) => (
-            <Card
-              key={section.title}
-              className="glass-effect p-6 hover:border-[#6104d7]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6104d7]/10"
-            >
+            <Card key={section.title} className="glass-effect p-6">
               <div className="mb-6">
                 <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
                   <section.icon className="h-6 w-6 text-white" />
@@ -68,16 +52,14 @@ export default function DocsPage() {
               </div>
               <ul className="space-y-2">
                 {section.links.map((link) => (
-                  <li key={link.name}>
-                    <Link href={link.href}>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
-                      >
-                        <ArrowRight className="mr-2 h-4 w-4" />
-                        {link.name}
-                      </Button>
-                    </Link>
+                  <li key={link}>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/5"
+                    >
+                      <ArrowRight className="mr-2 h-4 w-4" />
+                      {link}
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -88,3 +70,4 @@ export default function DocsPage() {
     </main>
   )
 }
+

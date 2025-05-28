@@ -244,8 +244,8 @@ export default function LeaderboardPage() {
                           </TableCell>
                           <TableCell>
                             <Link
-                              href={`https://testnet.explorer.perawallet.app/address/${user.address}`}
-                              target="_blank"
+                          href={`https://testnet.explorer.perawallet.app/address/${user.address}`}
+                          target="_blank"
                               rel="noopener noreferrer"
                               className="text-indigo-300 hover:text-indigo-200 transition-colors"
                             >
