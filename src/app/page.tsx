@@ -43,6 +43,30 @@ const features = [
   },
 ]
 
+const sampleProjects = [
+  {
+    id: 1,
+    name: "AlgoSwap DEX",
+    description: "A decentralized exchange built on Algorand with low fees and high throughput",
+    stage: "Active",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    name: "NFT Marketplace",
+    description: "A platform for creating, buying, and selling NFTs on the Algorand blockchain",
+    stage: "Beta",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    name: "AlgoVault",
+    description: "Secure wallet and asset management solution for Algorand blockchain",
+    stage: "Active",
+    created_at: new Date().toISOString(),
+  },
+]
+
 const stats = [
   { label: "Active Developers", value: "5,000+" },
   { label: "Total Bounties", value: "$500K+" },
@@ -387,8 +411,8 @@ export default function Home() {
                                 Active
                               </span>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Project {i + 1}</h3>
-                            <p className="text-gray-400 mb-4">A decentralized application built on Algorand</p>
+                            <h3 className="text-xl font-bold text-white mb-2">{sampleProjects[i].name}</h3>
+                            <p className="text-gray-400 mb-4">{sampleProjects[i].description}</p>
                             <motion.div
                               whileHover={{ x: 5 }}
                               transition={{ type: "spring", stiffness: 400, damping: 10 }}
