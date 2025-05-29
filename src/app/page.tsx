@@ -10,8 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "https://qkmuehomuwzzxfkansbw.supabase.co",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFrbXVlaG9tdXd6enhma2Fuc2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5MzY0MDUsImV4cCI6MjA2MzUxMjQwNX0.1slVu00Me8OQs7YxMpjrNKGbtAlvQiTnd-vZPq34XPI",
 )
 
 // Define Project interface
