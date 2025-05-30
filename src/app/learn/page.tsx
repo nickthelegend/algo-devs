@@ -2092,7 +2092,43 @@ class SubscriptionService extends Contract {
 }
 
 export default SubscriptionService;`,
-    
+    questions: [
+      {
+        question: "What happens when a new user subscribes?",
+        options: [
+          "Subscription starts from next billing cycle",
+          "Subscription starts immediately and subscriber count increases",
+          "Payment is held until approval",
+          "User must wait for admin approval",
+        ],
+        correct: 1,
+      },
+      {
+        question: "How is subscription renewal handled?",
+        options: [
+          "Automatic renewal without payment",
+          "Manual renewal with payment extending from current expiry",
+          "Renewal only at exact expiry time",
+          "Renewal requires service provider approval",
+        ],
+        correct: 1,
+      },
+      {
+        question: "What determines if a subscriber is active?",
+        options: [
+          "Last payment date",
+          "Subscription expiry time compared to current time",
+          "Service provider approval",
+          "Payment amount",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Who receives the subscription payments?",
+        options: ["The contract", "All subscribers", "The service provider", "A treasury account"],
+        correct: 2,
+      },
+    ],
   },
   {
     id: "insurance-contract",
@@ -2323,7 +2359,43 @@ class DecentralizedInsurance extends Contract {
 }
 
 export default DecentralizedInsurance;`,
-  
+    questions: [
+      {
+        question: "Who can process insurance claims?",
+        options: ["Anyone", "Only the insurer", "Only the oracle", "Only policyholders"],
+        correct: 2,
+      },
+      {
+        question: "What happens to a policy after a successful claim?",
+        options: [
+          "Policy continues as normal",
+          "Policy is invalidated and removed",
+          "Policy premium increases",
+          "Policy is transferred to insurer",
+        ],
+        correct: 1,
+      },
+      {
+        question: "How much can the insurer withdraw from the pool?",
+        options: [
+          "Any amount",
+          "Only the premium amounts",
+          "Only excess funds above required reserves",
+          "Nothing, funds are locked",
+        ],
+        correct: 2,
+      },
+      {
+        question: "What is required to buy an insurance policy?",
+        options: [
+          "Only oracle approval",
+          "Premium payment and no existing active policy",
+          "Insurer permission",
+          "Minimum pool balance",
+        ],
+        correct: 1,
+      },
+    ],
   },
   {
     id: "dao-governance",
@@ -2524,7 +2596,48 @@ class DAOGovernance extends Contract {
 }
 
 export default DAOGovernance;`,
-  
+    questions: [
+      {
+        question: "What is required for a proposal to be executed?",
+        options: [
+          "Only majority votes",
+          "Quorum reached and more votes for than against",
+          "Unanimous approval",
+          "Creator approval only",
+        ],
+        correct: 1,
+      },
+      {
+        question: "When can a proposal be executed?",
+        options: [
+          "Immediately after creation",
+          "During the voting period",
+          "Only after the voting period ends",
+          "Anytime by the creator",
+        ],
+        correct: 2,
+      },
+      {
+        question: "Can a user vote multiple times on the same proposal?",
+        options: [
+          "Yes, votes accumulate",
+          "No, only one vote per user per proposal",
+          "Yes, but only with different vote power",
+          "Only if they have more tokens",
+        ],
+        correct: 1,
+      },
+      {
+        question: "What determines voting power in this DAO?",
+        options: [
+          "One person, one vote",
+          "Token balance (governance tokens)",
+          "Reputation score",
+          "Time since joining",
+        ],
+        correct: 1,
+      },
+    ],
   },
   {
     id: "prediction-market",
@@ -2775,7 +2888,43 @@ class PredictionMarket extends Contract {
 }
 
 export default PredictionMarket;`,
-  
+    questions: [
+      {
+        question: "When can users place bets in the prediction market?",
+        options: [
+          "Anytime after creation",
+          "Only before resolution time and market is not resolved",
+          "Only after oracle approval",
+          "Only during specific hours",
+        ],
+        correct: 1,
+      },
+      {
+        question: "How are winnings calculated for successful bettors?",
+        options: [
+          "Fixed 2x return",
+          "Original bet plus proportional share of losing bets minus fees",
+          "Equal distribution among winners",
+          "Based on time of bet placement",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Who can resolve the prediction market?",
+        options: ["Anyone", "Only the creator", "Only the designated oracle", "Only bettors"],
+        correct: 2,
+      },
+      {
+        question: "What happens to the market fees?",
+        options: [
+          "Distributed to all users",
+          "Burned/destroyed",
+          "Can be withdrawn by the market creator",
+          "Automatically reinvested",
+        ],
+        correct: 2,
+      },
+    ],
   },
   {
     id: "supply-chain",
@@ -2981,7 +3130,43 @@ class SupplyChainTracking extends Contract {
 }
 
 export default SupplyChainTracking;`,
-  
+    questions: [
+      {
+        question: "Who can create new products in the supply chain?",
+        options: ["Anyone", "Only the admin", "Only authorized parties", "Only product owners"],
+        correct: 2,
+      },
+      {
+        question: "What happens when a product status is updated?",
+        options: [
+          "Status can be changed to any value",
+          "Status can only be upgraded, not downgraded",
+          "Status resets to created",
+          "Status requires admin approval",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Who can transfer ownership of a product?",
+        options: [
+          "Anyone",
+          "Only the admin",
+          "Only the current owner to authorized parties",
+          "Only authorized parties",
+        ],
+        correct: 2,
+      },
+      {
+        question: "How is product authenticity verified?",
+        options: [
+          "By checking if product data exists",
+          "By admin verification",
+          "By owner confirmation",
+          "By location tracking",
+        ],
+        correct: 0,
+      },
+    ],
   },
   {
     id: "carbon-credits",
@@ -3223,7 +3408,38 @@ class CarbonCreditsTrading extends Contract {
 }
 
 export default CarbonCreditsTrading;`,
-  
+    questions: [
+      {
+        question: "What must happen before carbon credits can be sold?",
+        options: [
+          "Only admin approval needed",
+          "Credits must be verified by the designated verifier",
+          "Credits must be retired first",
+          "No requirements, can sell immediately",
+        ],
+        correct: 1,
+      },
+      {
+        question: "What happens when carbon credits are retired?",
+        options: [
+          "They can still be traded",
+          "They are permanently removed from circulation and cannot be sold",
+          "They can only be sold to admin",
+          "They become more valuable",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Who receives payment when carbon credits are purchased?",
+        options: ["The contract", "The admin", "The current owner/seller", "The verifier"],
+        correct: 2,
+      },
+      {
+        question: "Who can issue new carbon credits?",
+        options: ["Anyone", "Only the verifier", "Only the admin", "Only credit owners"],
+        correct: 2,
+      },
+    ],
   },
   {
     id: "real-estate-tokenization",
@@ -3472,7 +3688,43 @@ class RealEstateTokenization extends Contract {
 }
 
 export default RealEstateTokenization;`,
-  
+    questions: [
+      {
+        question: "How are rental income dividends calculated for token holders?",
+        options: [
+          "Equal distribution to all holders",
+          "Based on time of token purchase",
+          "Proportional to number of tokens owned",
+          "Fixed amount per token",
+        ],
+        correct: 2,
+      },
+      {
+        question: "Who can add rental income to the pool?",
+        options: ["Anyone", "Only token holders", "Only the property owner", "Only the contract admin"],
+        correct: 2,
+      },
+      {
+        question: "What happens when someone buys property tokens?",
+        options: [
+          "Payment goes to rental pool",
+          "Payment goes to property owner and tokens are allocated",
+          "Payment is held in escrow",
+          "Tokens are minted automatically",
+        ],
+        correct: 1,
+      },
+      {
+        question: "Can token holders transfer their tokens to others?",
+        options: [
+          "No, tokens are non-transferable",
+          "Only with property owner approval",
+          "Yes, freely transferable",
+          "Only after holding for minimum period",
+        ],
+        correct: 2,
+      },
+    ],
   },
   {
     id: "age-storage",
@@ -3513,7 +3765,48 @@ export default class CustomCreate extends Contract {
   }
 }
 export default CustomCreate;`,
-
+    questions: [
+      {
+        question: "What is the main purpose of the CustomCreate smart contract?",
+        options: [
+          "To store and update a user's name",
+          "To store an age value at creation and allow retrieval",
+          "To transfer Algos between accounts",
+          "To delete a stored value from global state",
+        ],
+        correct: 2,
+      },
+      {
+        question: "Which decorator ensures that the custom_create method must be called during contract creation?",
+        options: [
+          "@external",
+          "@arc4method",
+          "@abimethod(create='require')",
+          "@init",
+        ],
+        correct: 3,
+      },
+      {
+        question: "What data type is used for the age variable in the contract?",
+        options: [
+          "String",
+          "UInt64",
+          "Bytes",
+          "Int32",
+        ],
+        correct: 2,
+      },
+      {
+        question: "What does the get_age method do?",
+        options: [
+          "Sets a new age value",
+          "Deletes the age value",
+          "Returns the current age value stored in global state",
+          "Increments the age value by one",
+        ],
+        correct: 3,
+      },
+    ],
   },
   {
     id: "storing-managing-user-struct",
@@ -3604,7 +3897,48 @@ export default class StructInBoxMap extends Contract {
   }
 }
   export default StructInBoxMap;`,
-
+    questions: [
+      {
+        question: "What is the main purpose of the StructInBoxMap contract?",
+        options: [
+          "To transfer Algos between accounts",
+          "To store and manage structured user data in Algorand boxes using a mapping",
+          "To create and delete Algorand assets",
+          "To manage global state variables only",
+        ],
+        correct: 2, 
+      },
+      {
+        question: "What are the fields defined in the UserStruct structure?",
+        options: [
+          "name, age, balance",
+          "username, id, asset",
+          "name, id, asset",
+          "address, asset, balance",
+        ],
+        correct: 3,
+      },
+      {
+        question: "Which method would you use to check if a user exists in the box map?",
+        options: [
+          "box_map_set",
+          "box_map_get",
+          "box_map_exists",
+          "box_map_test",
+        ],
+        correct: 3,
+      },
+      {
+        question: "What does the box_map_set method do?",
+        options: [
+          "Retrieves a user struct from the map",
+          "Checks if a key exists in the map",
+          "Stores a copy of a user struct at a specified key in the map",
+          "Deletes a user struct from the map",
+        ],
+        correct: 3,
+      },
+    ],
   },
   {
     id: "strict-self-payment-logicsig-contract",
@@ -3679,8 +4013,49 @@ export default class SelfPayment extends LogicSig {
   }
 }
   export default SelfPayment;`,
-  
-  }
+    questions: [
+      {
+        question: "What type of transaction does the self_payment LogicSig contract authorize?",
+        options: [
+          "Asset transfer",
+          "Payment from sender to receiver",
+          "Zero-amount payment from sender to themselves",
+          "Rekey transaction",
+        ],
+        correct: 3,
+      },
+      {
+        question: "What is the purpose of the Txn.lease == op.sha256(b'self-payment') condition in the contract?",
+        options: [
+          "To ensure the transaction is a payment",
+          "To prevent replay attacks",
+          "To check the transaction fee",
+          "To verify the receiver’s address",
+        ],
+        correct: 2,
+      },
+      {
+        question: "Which field is used to restrict the transaction to a specific Algorand network?",
+        options: [
+          "Txn.type_enum",
+          "Global.genesis_hash",
+          "Txn.amount",
+          "Txn.receiver",
+        ],
+        correct: 2,
+      },
+      {
+        question: "What happens if the transaction tries to close out the account or rekey it?",
+        options: [
+          "The LogicSig will approve the transaction",
+          "The LogicSig will reject the transaction",
+          "The transaction will be sent to another account",
+          "The transaction will be retried in the next block",
+        ],
+        correct: 2,
+      },
+    ],
+  },
 ]
 
 const categories = ["All", "Beginner", "Intermediate", "Advanced"]
