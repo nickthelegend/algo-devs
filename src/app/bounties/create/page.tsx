@@ -500,7 +500,7 @@ export default function CreateBountyPage() {
 
               <div className="flex justify-end space-x-4 pt-4">
                 <Link href="/bounties">
-                  <Button variant="outline" className="border-indigo-400/20 text-white">
+                  <Button variant="outline" className="border-indigo-400/20 text-black">
                     Cancel
                   </Button>
                 </Link>

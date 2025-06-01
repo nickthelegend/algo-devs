@@ -266,7 +266,7 @@ export default function CreateProjectPage() {
                     variant="outline"
                     size="sm"
                     onClick={addRoleField}
-                    className="h-8 border-indigo-400/20 text-indigo-300"
+                    className="h-8 border-indigo-400/20 text-black"
                   >
                     <Plus className="h-4 w-4 mr-1" /> Add Role
                   </Button>

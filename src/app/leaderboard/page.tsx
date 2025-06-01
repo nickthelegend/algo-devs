@@ -152,7 +152,7 @@ export default function LeaderboardPage() {
             </div>
             <Button
               variant="outline"
-              className="mt-4 md:mt-0 border-indigo-400/30 text-indigo-300 hover:bg-indigo-900/30"
+              className="mt-4 md:mt-0 border-indigo-400/30 text-black hover:bg-indigo-900/30"
               onClick={fetchLeaderboardData}
               disabled={loading}
             >
