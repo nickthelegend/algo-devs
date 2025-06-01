@@ -226,9 +226,9 @@ export default function LeaderboardPage() {
                   <Table>
                     <TableHeader className="bg-indigo-900/30">
                       <TableRow className="border-indigo-400/20 hover:bg-transparent">
-                        <TableHead className="text-indigo-300 w-16 text-center">Rank</TableHead>
-                        <TableHead className="text-indigo-300">Developer</TableHead>
-                        <TableHead className="text-indigo-300 text-right">Wins</TableHead>
+                        <TableHead className="text-white w-16 text-center">Rank</TableHead>
+                        <TableHead className="text-white">Developer</TableHead>
+                        <TableHead className="text-white text-right">Wins</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

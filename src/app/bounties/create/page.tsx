@@ -363,7 +363,7 @@ export default function CreateBountyPage() {
                           type="button"
                           variant="outline"
                           onClick={() => fileInputRef.current?.click()}
-                          className="mt-2 border-indigo-400/30 text-indigo-300 hover:text-indigo-200"
+                          className="mt-2 border-indigo-400/30 text-black hover:text-indigo-200"
                           disabled={uploadingImage}
                         >
                           {uploadingImage ? (
