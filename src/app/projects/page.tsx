@@ -174,7 +174,7 @@ export default function ProjectsPage() {
             </Select>
 
             <Select value={selectedTeamSize} onValueChange={setSelectedTeamSize}>
-              <SelectTrigger className="w-[180px] bg-white text-black border-0 h-11 rounded-lg">
+              <SelectTrigger className="w-[180px] bg-white text-black border-0 h-9 rounded-lg">
                 <SelectValue placeholder="TEAM SIZE" />
               </SelectTrigger>
               <SelectContent className="bg-white border-0">
