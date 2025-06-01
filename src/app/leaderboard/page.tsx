@@ -152,7 +152,7 @@ export default function LeaderboardPage() {
             </div>
             <Button
               variant="outline"
-              className="mt-4 md:mt-0 border-indigo-400/30 text-indigo-300 hover:bg-indigo-900/30"
+              className="mt-4 md:mt-0 border-indigo-400/30 text-black hover:bg-indigo-900/30"
               onClick={fetchLeaderboardData}
               disabled={loading}
             >
@@ -226,9 +226,9 @@ export default function LeaderboardPage() {
                   <Table>
                     <TableHeader className="bg-indigo-900/30">
                       <TableRow className="border-indigo-400/20 hover:bg-transparent">
-                        <TableHead className="text-indigo-300 w-16 text-center">Rank</TableHead>
-                        <TableHead className="text-indigo-300">Developer</TableHead>
-                        <TableHead className="text-indigo-300 text-right">Wins</TableHead>
+                        <TableHead className="text-white w-16 text-center">Rank</TableHead>
+                        <TableHead className="text-white">Developer</TableHead>
+                        <TableHead className="text-white text-right">Wins</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
