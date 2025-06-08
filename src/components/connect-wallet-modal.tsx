@@ -2,6 +2,7 @@
 
 import { type Wallet, useWallet } from "@txnlab/use-wallet-react"
 import { toast } from "react-toastify"
+import { useRouter } from 'next/navigation'
 
 const ConnectWalletModal = ({
   wallets,
@@ -13,6 +14,7 @@ const ConnectWalletModal = ({
   onClose: () => void
 }) => {
   const { activeAccount } = useWallet()
+  const router = useRouter();
 
   if (!isOpen) return null
 
@@ -41,6 +43,7 @@ const ConnectWalletModal = ({
       }
       toast.success("Disconnected from all wallets")
       onClose()
+      router.push('/');
     } catch (error) {
       console.error(error)
       toast.error("Failed to disconnect wallets")
