@@ -312,7 +312,7 @@ const arcs = [
   {
     id: "ARC-0073",
     title: "Algorand Interface Detection Spec",
-    status: "Finall",
+    status: "Final",
     date: "2023-01-10",
     category: "Interface",
   },

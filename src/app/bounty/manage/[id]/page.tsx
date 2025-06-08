@@ -749,7 +749,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-indigo-400/20 text-white"
+                  className="border-indigo-400/20 text-black"
                   onClick={() => setSelectedSubmission(submission)}
                   disabled={processingAction === submission.id}
                 >
