@@ -55,6 +55,7 @@
     "react-day-picker": "^8.10.1",
     "react-dom": "^19.1.0",
     "react-markdown": "^9.0.3",
+    "react-router-dom": "^7.6.2",
     "react-toastify": "^11.0.5",
     "shiki": "^1.27.2",
     "sonner": "^1.7.4",
