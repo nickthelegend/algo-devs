@@ -1,5 +1,6 @@
 "use client"
 
+import { use } from 'react';
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -66,7 +67,7 @@ interface Submission {
   attachments?: string[]
 }
 
-export default function ManageBountyPage({ params }: { params: { id: string } }) {
+export default function Page({ params }: { params: Promise<{ id: string }> }) {
   const { activeAccount, transactionSigner } = useWallet()
   const router = useRouter()
   const [bounty, setBounty] = useState<BountyConfig | null>(null)
@@ -83,6 +84,9 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
   const [settingWinner, setSettingWinner] = useState(false)
   const [currentWinnerAddress, setCurrentWinnerAddress] = useState<string | null>(null)
 
+  // Resolve the id from params
+  const { id } = use(params)
+
   useEffect(() => {
     if (activeAccount) {
       fetchBountyDetails()
@@ -90,14 +94,14 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
       setUnauthorized(true)
       setLoading(false)
     }
-  }, [activeAccount, params.id])
+  }, [activeAccount, id])
 
   // Replace the fetchBountyDetails function with this updated version that fetches real submissions
   async function fetchBountyDetails() {
     setLoading(true)
     setError(null)
     try {
-      const appId = Number.parseInt(params.id)
+      const appId = Number.parseInt(id)
       if (isNaN(appId)) {
         throw new Error("Invalid bounty ID")
       }
@@ -253,7 +257,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
                 submitter: `User ${fetchedSubmissions.length + 1}`,
                 submitterAddress: submitterAddress,
                 submissionTime: new Date(), // We don't have the actual submission time from the blockchain
-                description: submissionText,
+                description: String(submissionText),
                 status: "pending", // Default status
                 feedback: "",
               })
@@ -413,7 +417,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
         defaultSigner: transactionSigner,
       })
 
-      toast.info("Sending reward transaction to the blockchain...", { autoClose: false })
+      toast.info("Sending reward transaction to the blockchain...", { duration: Infinity })
 
       // In a real implementation, you would call the smart contract to send the reward
       // For demonstration, we'll simulate the transaction with a delay
@@ -472,7 +476,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
           algosdk.decodeAddress(submission.submitterAddress).publicKey,
         ],
         suggestedParams: { ...suggestedParams },
-        boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAccount.address).publicKey }],
+        boxes: [{ appIndex: managerAppId, name: algosdk.decodeAddress(submission.submitterAddress).publicKey }],
       })
 
       const managerTxn = algosdk.makeApplicationNoOpTxnFromObject({
@@ -495,7 +499,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
           algosdk.decodeAddress(submission.submitterAddress).publicKey,
         ],
         suggestedParams: { ...suggestedParams },
-        boxes: [{ appIndex: 0, name: algosdk.decodeAddress(activeAccount.address).publicKey }],
+        boxes: [{ appIndex: managerAppId, name: algosdk.decodeAddress(submission.submitterAddress).publicKey }],
       })
 
       // Create transaction for the bounty app
@@ -526,16 +530,16 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
       const txns = [intialTxn,managerTxn, bountyTxn]
       algosdk.assignGroupID(txns)
 
-      toast.info("Setting winner on the blockchain...", { autoClose: false })
+      toast.info("Setting winner on the blockchain...", { duration: Infinity })
 
       // Sign the transactions
       const signedTxns = await transactionSigner(txns, [0, 1, 2])
 
       // Send the signed transactions
-      const { txId } = await algod.sendRawTransaction(signedTxns).do()
+      const { txid } = await algod.sendRawTransaction(signedTxns).do()
 
       // Wait for confirmation
-      await algosdk.waitForConfirmation(algod, txId, 4)
+      await algosdk.waitForConfirmation(algod, txid, 4)
 
       // Update the UI
       setCurrentWinnerAddress(submission.submitterAddress)
@@ -805,7 +809,7 @@ export default function ManageBountyPage({ params }: { params: { id: string } })
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <Link
-            href={`/bounty/${params.id}`}
+            href={`/bounty/${id}`}
             className="inline-flex items-center text-indigo-300 hover:text-indigo-200"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
