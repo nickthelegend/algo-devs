@@ -158,16 +158,20 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
               className="flex flex-wrap gap-4 mb-12"
             >
-              <Button size="lg" className="bg-[#6104d7] hover:bg-[#6104d7]/90 text-white border-0">
-                Start Building
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-[#ec0033] text-[#ec0033] hover:bg-[#ec0033] hover:text-white"
-              >
-                View Bounties
-              </Button>
+              <a href="docs">
+                <Button size="lg" className="bg-[#6104d7] hover:bg-[#6104d7]/90 text-white border-0">
+                  Start Building
+                </Button>
+              </a>
+              <a href="bounties">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-[#ec0033] text-[#ec0033] hover:bg-[#ec0033] hover:text-white"
+                >
+                  View Bounties
+                </Button>
+              </a>
             </motion.div>
 
             <motion.div
