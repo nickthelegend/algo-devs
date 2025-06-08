@@ -12,15 +12,13 @@ import {
   Trophy,
   Target,
   Coins,
-  Shield,
   Award,
   Lock,
   Copy,
   ExternalLink,
   TrendingUp,
-  Users,
   CheckCircle,
-  Clock,
+  Pencil,
 } from "lucide-react"
 
 
@@ -32,6 +30,39 @@ export default function BountyProfilePage() {
         const {activeAccount} = useWallet();
     }
     
+    const AVATARS = [
+      { id: 1, src: 'https://robohash.org/1.png?set=set4' },
+      { id: 2, src: 'https://robohash.org/2.png?set=set4' },
+      { id: 3, src: 'https://robohash.org/3.png?set=set4' },
+      { id: 4, src: 'https://robohash.org/4.png?set=set4' },
+      { id: 5, src: 'https://robohash.org/5.png?set=set4' },
+      { id: 6, src: 'https://robohash.org/6.png?set=set4' },
+      { id: 7, src: 'https://robohash.org/7.png?set=set4' },
+      { id: 8, src: 'https://robohash.org/8.png?set=set4' },
+  ];
+
+
+  const [selectedAvatar, setSelectedAvatar] = useState<string>('');
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+
+  useEffect(() => {
+    const savedAvatar = localStorage.getItem('user-avatar');
+    if (savedAvatar) {
+      setSelectedAvatar(savedAvatar);
+    } else {
+      setSelectedAvatar(AVATARS[0].src)
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedAvatar) {
+      localStorage.setItem('user-avatar', selectedAvatar);
+    }
+  }, [selectedAvatar]);
+  const handleAvatarSelect = (avatarSrc: string) => {
+    setSelectedAvatar(avatarSrc);
+    setIsAvatarModalOpen(false);
+  }
     /*const indexerClient = new algosdk.Indexer('', 'https://testnet-idx.algonode.cloud', '');
 
     type UserStats = {
@@ -171,6 +202,7 @@ export default function BountyProfilePage() {
     description: string;
     unlocked: boolean;
     type: "task" | "first_sign";
+    rarity: string;
   };
 
   type BadgeCriteria = {
@@ -178,14 +210,16 @@ export default function BountyProfilePage() {
     tasksRequired?: number;
     description: string;
     type: "task" | "first_sign";
+    rarity: string;
   };
 
   const BADGE_CRITERIA: BadgeCriteria[] = [
-    {name: "Rookie", description: "Awarded for connecting your wallet for the first time.", type: "first_sign",},
-    {name: "Task Master", tasksRequired: 3, description: "Awarded for completing your first 3 tasks.", type: "task",},
-    {name: "Bounty Hunter", tasksRequired: 5, description: "Unlocked after finishing 5 tasks.", type: "task",},
-    {name: "Algorand Pro", tasksRequired: 10, description: "Earned by completing 10 tasks.", type: "task",},
-
+    {name: "Rookie", description: "Awarded for connecting your wallet for the first time.", type: "first_sign", rarity: "common",},
+    {name: "Power User", tasksRequired: 5, description: "Awarded for completing your first 5 tasks.", type: "task", rarity: "common",},
+    {name: "Task Master", tasksRequired: 15, description: "Earned by completing 15 tasks.", type: "task", rarity: "rare",},
+    {name: "Bounty Hunter", tasksRequired: 25, description: "Earned by completing 25 tasks.", type: "task", rarity: "epic",},
+    {name: "Community Helper", tasksRequired: 50, description: "Earned by completing 50 tasks.", type: "task", rarity: "legendary",},
+    {name: "Algorand Pro", tasksRequired: 65, description: "Earned by completing 65 tasks.", type: "task", rarity: "legendary",}
   ];
   const ALGONODE_API = "https://testnet-api.algonode.cloud";
 
@@ -242,79 +276,39 @@ export default function BountyProfilePage() {
     if (!account) return null;
     return (
       <div>
-        <h3 className="text-xl font-semibold mb-4">Badges</h3>
-        <div className="flex flex-wrap gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
           {badges.map((badge, index) => (
-            <div key={index} className={`min-w-[140px] p-4 rounded-lg text-center transition ${badge.unlocked? "border-2 border-green-500 bg-green-50 opacity-100":"border-2 border-gray-400 bg-gray-100 opacity-70"}`}>
-              <div className="font-bold text-red">{badge.name}</div>
-              <div className="text-2xl my-2 text-red">{badge.unlocked ? "✅" : "🔒"}</div>
-              <div className="text-sm text-red">{badge.description}</div>
-            </div>
+              <div key={index} className={`p-4 rounded-xl border transition-all duration-300 flex flex-col ${badge.unlocked? "bg-purple-900/40 border-purple-500/30 hover:border-purple-400/50" : "bg-gray-900/40 border-gray-600/30 opacity-60"}`}>
+                <div className="flex gap-3 mb-3">
+                  <div className={`p-2 rounded-lg ${badge.unlocked? "bg-purple-600/20" : "bg-gray-600/20"}`}>
+                    {badge.unlocked ? (
+                      <Trophy className="w-6 h-6 text-purple-400" />
+                    ) : (<Lock className="w-6 h-6 text-gray-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className={`font-semibold ${badge.unlocked? "text-white" : "text-gray-500"}`}>{badge.name}</h3>
+                    <Badge className={`text-xs ${
+                      badge.rarity === "legendary"
+                        ? "badge-yellow hover:bg-yellow-500/20"
+                        : badge.rarity === "epic"
+                          ? "badge-purple hover:bg-purple-500/20"
+                          : badge.rarity === "rare"
+                            ? "badge-green hover:bg-green-500/20"
+                            : "badge-purple hover:bg-purple-500/20"
+                    }`}>
+                      {badge.rarity}
+                    </Badge>
+                  </div>
+                </div>
+                <p className={`text-sm mt-auto ${badge.unlocked? "text-gray-300" : "text-gray-500"}`}>{badge.description}</p>
+              </div>
           ))}
         </div>
       </div>
     );
   }
 
-
-  const badges = [
-    {
-      id: 1,
-      name: "Rookie",
-      description: "First Sign-In",
-      icon: Target,
-      unlocked: true,
-      rarity: "common",
-    },
-    {
-      id: 1,
-      name: "First Bounty",
-      description: "Completed your first bounty",
-      icon: Target,
-      unlocked: false,
-      rarity: "common",
-    },
-    {
-      id: 2,
-      name: "Speed Demon",
-      description: "Completed 5 bounties in 24 hours",
-      icon: Clock,
-      unlocked: false,
-      rarity: "rare",
-    },
-    {
-      id: 3,
-      name: "Bug Hunter",
-      description: "Found and fixed 10 critical bugs",
-      icon: Shield,
-      unlocked: false,
-      rarity: "epic",
-    },
-    {
-      id: 4,
-      name: "Community Leader",
-      description: "Helped 50+ developers",
-      icon: Users,
-      unlocked: false,
-      rarity: "legendary",
-    },
-    {
-      id: 5,
-      name: "Millionaire",
-      description: "Earned 1M ALGO in bounties",
-      icon: Coins,
-      unlocked: false,
-      rarity: "legendary",
-    },
-    {
-      id: 6,
-      name: "Perfect Score",
-      description: "Maintain 5.0 rating for 30 days",
-      icon: Star,
-      unlocked: false,
-      rarity: "epic",
-    },
-  ]
 
 
   return (
@@ -323,9 +317,10 @@ export default function BountyProfilePage() {
         {/* Header Section */}
         <div className="glass-effect rounded-2xl p-8 mt-20 mb-8 fade-in">
           <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center text-4xl font-bold text-white shadow-2xl">
-                AD
+            <div className="relative group cursoe-pointer" onClick={() => setIsAvatarModalOpen(true)}>
+              {selectedAvatar && (<img src={selectedAvatar} alt="User Avatar" className="w-32 h-32 rounded-full object-cover bg-gray-800 shadow-2xl border-2 border-purple-500" />)}
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 rounded-full flex items-center justify-center transition-opacity duration-300">
+                <Pencil className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
             </div>
             <div className="flex-1">
@@ -353,7 +348,7 @@ export default function BountyProfilePage() {
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-black-400 text-white-400" />
+                      <Star key={i} className="w-5 h-5 fill-white text-white" />
                     ))}
                     <span className="text-white font-semibold ml-2">0.0</span>
                   </div>
@@ -389,6 +384,24 @@ export default function BountyProfilePage() {
             </div>
           </div>
         </div>
+
+        {isAvatarModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="glass-effect rounded-2xl p-8 max-w-lg w-full relative">
+              <h3 className="text-2xl font-bold text-white mb-6 text-center">Choose Your Avatar</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {AVATARS.map((avatar) => (
+                  <img key={avatar.id} src={avatar.src} alt={`Avatar ${avatar.id}`} className={`w-24 h-24 rounded-full cursor-pointer object-cover border-4 transition-all duration-200 ${
+                                      selectedAvatar === avatar.src ? 'border-purple-500 scale-110' : 'border-transparent hover:border-purple-400'
+                                  }`} onClick={() => handleAvatarSelect(avatar.src)} />
+                ))}
+              </div>
+              <Button variant="outline" className="w-full mt-8 border-purple-500/50 text-black hover:bg-purple-600 hover:text-white" onClick={() => setIsAvatarModalOpen(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -476,10 +489,10 @@ export default function BountyProfilePage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Current Level: Expert</span>
-                      <span className="text-purple-300">9,847 / 10,000</span>
+                      <span className="text-gray-400">Current Level: Rookie</span>
+                      <span className="text-purple-300">0 / 500</span>
                     </div>
-                    <p className="text-xs text-gray-400">153 points to Master level</p>
+                    <p className="text-xs text-gray-400">500 points to Veteran level</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 pt-4">
@@ -520,54 +533,7 @@ export default function BountyProfilePage() {
                 <p className="text-gray-400">Unlock badges by completing bounties and contributing to projects</p>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <p className="text-white">New code</p>
                   {activeAccount?.address && <Badges account={activeAccount?.address ?? null} />}
-                  {/*{badges.map((badge) => {
-                    const IconComponent = badge.icon
-                    return (
-                      <div
-                        key={badge.id}
-                        className={`p-4 rounded-xl border transition-all duration-300 ${
-                          badge.unlocked
-                            ? "bg-purple-900/40 border-purple-500/30 hover:border-purple-400/50"
-                            : "bg-gray-900/40 border-gray-600/30 opacity-60"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className={`p-2 rounded-lg ${badge.unlocked ? "bg-purple-600/20" : "bg-gray-600/20"}`}>
-                            {badge.unlocked ? (
-                              <IconComponent className="w-6 h-6 text-purple-400" />
-                            ) : (
-                              <Lock className="w-6 h-6 text-gray-500" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className={`font-semibold ${badge.unlocked ? "text-white" : "text-gray-500"}`}>
-                              {badge.name}
-                            </h3>
-                            <Badge
-                              className={`text-xs ${
-                                badge.rarity === "legendary"
-                                  ? "badge-yellow hover:bg-yellow-500/20"
-                                  : badge.rarity === "epic"
-                                    ? "badge-purple hover:bg-purple-500/20"
-                                    : badge.rarity === "rare"
-                                      ? "badge-green hover:bg-green-500/20"
-                                      : "badge-purple hover:bg-purple-500/20"
-                              }`}
-                            >
-                              {badge.rarity}
-                            </Badge>
-                          </div>
-                        </div>
-                        <p className={`text-sm ${badge.unlocked ? "text-gray-300" : "text-gray-500"}`}>
-                          {badge.description}
-                        </p>
-                      </div>
-                    )
-                  })}*/}
-                </div>
               </CardContent>
             </Card>
           </TabsContent>
