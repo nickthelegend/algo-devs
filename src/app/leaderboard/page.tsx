@@ -103,13 +103,6 @@ export default function LeaderboardPage() {
         }
       }
 
-      const hardcodedUser: LeaderboardUser = {
-        address: "QBRIPFWC5ATFAWDHUQORWTNSCG7WS4OASDRFVDEU5CZEK22XMRXDTAQ7N4",
-        wins: 1,
-        rank: 0,
-      };
-      leaderboardUsers.push(hardcodedUser);
-
       // Sort users by number of wins (descending)
       const sortedUsers = leaderboardUsers.sort((a, b) => b.wins - a.wins)
 
