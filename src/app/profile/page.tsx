@@ -336,24 +336,30 @@ export default function BountyProfilePage() {
       { id: 8, src: 'https://robohash.org/8.png?set=set4' },
     ];
     
-    const [selectedAvatar, setSelectedAvatar] = useState<string>('');
+    const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATARS[0].src);
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
-      const savedAvatar = localStorage.getItem('user-avatar');
-      if (savedAvatar) {
-        setSelectedAvatar(savedAvatar);
+      if (activeAccount) {
+        const storageKey = `user-avatar-${activeAccount.address}`;
+        const savedAvatar = localStorage.getItem(storageKey);
+        if (savedAvatar) {
+          setSelectedAvatar(savedAvatar);
+        } else {
+          setSelectedAvatar(AVATARS[0].src);
+        }
       } else {
         setSelectedAvatar(AVATARS[0].src);
       }
-    }, []);
+    }, [activeAccount]);
 
     useEffect(() => {
-      if (selectedAvatar) {
-        localStorage.setItem('user-avatar', selectedAvatar);
+      if (activeAccount && selectedAvatar !== AVATARS[0].src) {
+        const storageKey = `user-avatar-${activeAccount.address}`;
+        localStorage.setItem(storageKey, selectedAvatar);
       }
-    }, [selectedAvatar]);
+    }, [selectedAvatar, activeAccount]);
 
     const handleAvatarSelect = (avatarSrc: string) => {
       setSelectedAvatar(avatarSrc);
