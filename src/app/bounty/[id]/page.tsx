@@ -385,7 +385,7 @@ export default function BountyDetailsPage({ params }: { params: { id: string } }
                   </Link>
                 )}
 
-                <Button variant="outline" className="border-indigo-400/20 text-white">
+                <Button variant="outline" className="border-indigo-400/20 text-black">
                   Share
                 </Button>
               </div>
