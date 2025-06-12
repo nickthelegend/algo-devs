@@ -43,6 +43,7 @@ const BADGE_CRITERIA: BadgeCriteria[] = [
 
 const ALGONODE_INDEXER_API = "https://testnet-idx.algonode.cloud";
 
+
 // *** FIX: Define a type for the indexer's JSON response to help TypeScript ***
 interface IndexerResponse {
   'next-token'?: string;
@@ -339,6 +340,7 @@ export default function BountyProfilePage() {
     const [selectedAvatar, setSelectedAvatar] = useState<string>(AVATARS[0].src);
     const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [showFullAddress, setShowFullAddress] = useState(false);
 
     useEffect(() => {
       if (activeAccount) {
@@ -402,7 +404,7 @@ export default function BountyProfilePage() {
                           <div className="flex items-center gap-2 bg-black/30 rounded-lg px-4 py-2">
                             <code className="text-purple-300 text-sm font-mono">
                               <span>
-                                  {activeAccount? `${activeAccount.address.slice(0,9)}.....${activeAccount.address.slice(-9)}` : "Not Connected"}
+                                  {activeAccount? showFullAddress? activeAccount.address: `${activeAccount.address.slice(0,9)}.....${activeAccount.address.slice(-9)}` : "Not Connected"}
                               </span>
                             </code>
                             <Button
@@ -417,6 +419,16 @@ export default function BountyProfilePage() {
                                 <Copy className="w-4 h-4 text-gray-400" />
                               )}
                             </Button>
+                            {activeAccount && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowFullAddress((prev) => !prev)}
+                                className="h-6 w-12 p-0 bg-purple-500/20"
+                              >
+                                {showFullAddress ? "Hide" : "Show"}
+                              </Button>
+                            )}
                           </div>
                           <div className="flex items-center gap-4">
                             <StarRating rating={starRating} />
