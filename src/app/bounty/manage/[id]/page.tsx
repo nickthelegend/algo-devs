@@ -793,7 +793,7 @@ export default function Page({ params }: { params: Promise<{ id: string }> }) {
                 )}
 
               {submission.status === "paid" && (
-                <Button size="sm" variant="outline" className="border-indigo-400/20 text-white" disabled>
+                <Button size="sm" variant="outline" className="border-indigo-400/20 text-black" disabled>
                   <CheckCircle className="h-4 w-4 mr-1 text-green-500" /> Reward Sent
                 </Button>
               )}
