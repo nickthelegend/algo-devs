@@ -410,7 +410,7 @@ export default function ARCsPage() {
             </TableHeader>
             <TableBody>
               {filteredArcs.map((arc) => (
-                <TableRow key={arc.id} className="hover:bg-white/5">
+                <TableRow  key={arc.id} className="hover:bg-white/5 cursor-pointer" onClick={() => window.open(getArcGithubUrl(arc.id), "_blank")} title={`Open ${arc.id} on GitHub`}>
                   <TableCell className="font-medium text-white">{arc.id}</TableCell>
                   <TableCell className="text-gray-300">{arc.title}</TableCell>
                   <TableCell>
