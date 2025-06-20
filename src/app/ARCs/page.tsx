@@ -367,6 +367,12 @@ const arcs = [
   },
 ];
 
+function getArcGithubUrl(arcId: string) {
+  // Convert ARC-0000 to arc-0000.md
+  const num = arcId.replace("ARC-", "").padStart(4, "0");
+  return `https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-${num}.md`;
+}
+
 
 export default function ARCsPage() {
   const [search, setSearch] = useState("");
