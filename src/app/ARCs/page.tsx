@@ -367,6 +367,12 @@ const arcs = [
   },
 ];
 
+function getArcGithubUrl(arcId: string) {
+  // Convert ARC-0000 to arc-0000.md
+  const num = arcId.replace("ARC-", "").padStart(4, "0");
+  return `https://github.com/algorandfoundation/ARCs/blob/main/ARCs/arc-${num}.md`;
+}
+
 
 export default function ARCsPage() {
   const [search, setSearch] = useState("");
@@ -404,7 +410,7 @@ export default function ARCsPage() {
             </TableHeader>
             <TableBody>
               {filteredArcs.map((arc) => (
-                <TableRow key={arc.id} className="hover:bg-white/5">
+                <TableRow  key={arc.id} className="hover:bg-white/5 cursor-pointer" onClick={() => window.open(getArcGithubUrl(arc.id), "_blank")} title={`Open ${arc.id} on GitHub`}>
                   <TableCell className="font-medium text-white">{arc.id}</TableCell>
                   <TableCell className="text-gray-300">{arc.title}</TableCell>
                   <TableCell>
