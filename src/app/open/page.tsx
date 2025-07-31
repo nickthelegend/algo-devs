@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Search, GitFork, Star, X } from "lucide-react"
+import { Plus, Search, GitFork, Star, X, Edit } from "lucide-react"
 
 const initialProjects = [
   {
@@ -50,6 +50,9 @@ export default function OpenSourcePage() {
 
   // Modal state and form fields
   const [modalOpen, setModalOpen] = useState(false)
+  // Editing mode state: null = adding new, project object = editing
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
+
   const [newProjectName, setNewProjectName] = useState("")
   const [newProjectDescription, setNewProjectDescription] = useState("")
   const [newProjectLanguage, setNewProjectLanguage] = useState("TypeScript")
@@ -82,10 +85,12 @@ export default function OpenSourcePage() {
     return 0
   })
 
-  // Handler to open modal
-  const openModal = () => {
+  // Open modal to add new project
+  const openAddModal = () => {
+    setEditingProjectId(null)
     setModalOpen(true)
-    // Reset form fields on open
+
+    // Reset form fields
     setNewProjectName("")
     setNewProjectDescription("")
     setNewProjectLanguage("TypeScript")
@@ -95,7 +100,24 @@ export default function OpenSourcePage() {
     setNewTagInput("")
   }
 
-  // Handler to close modal
+  // Open modal to edit existing project
+  const openEditModal = (projectId: number) => {
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) return
+    setEditingProjectId(projectId)
+    setModalOpen(true)
+
+    // Populate form fields with project data
+    setNewProjectName(project.name)
+    setNewProjectDescription(project.description)
+    setNewProjectLanguage(project.language)
+    setNewProjectStars(project.stars.toString())
+    setNewProjectForks(project.forks.toString())
+    setNewProjectTags(project.tags || [])
+    setNewTagInput("")
+  }
+
+  // Close modal
   const closeModal = () => {
     setModalOpen(false)
   }
@@ -122,10 +144,9 @@ export default function OpenSourcePage() {
     }
   }
 
-  // Handler to submit new project
-  const handleAddProject = (e: React.FormEvent<HTMLFormElement>) => {
+  // Handle form submit for add or edit
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Basic validation
     if (!newProjectName.trim()) {
       alert("Project name is required")
       return
@@ -135,23 +156,40 @@ export default function OpenSourcePage() {
       return
     }
 
-    // Parse stars and forks or default to 0
     const starsNum = parseInt(newProjectStars, 10)
     const forksNum = parseInt(newProjectForks, 10)
 
-    // Create new project object
-    const newProject = {
-      id: projects.length > 0 ? Math.max(...projects.map((p) => p.id)) + 1 : 1,
-      name: newProjectName.trim(),
-      description: newProjectDescription.trim(),
-      language: newProjectLanguage,
-      stars: isNaN(starsNum) ? 0 : starsNum,
-      forks: isNaN(forksNum) ? 0 : forksNum,
-      tags: newProjectTags,
+    if (editingProjectId === null) {
+      // Add new project
+      const newProject = {
+        id: projects.length > 0 ? Math.max(...projects.map((p) => p.id)) + 1 : 1,
+        name: newProjectName.trim(),
+        description: newProjectDescription.trim(),
+        language: newProjectLanguage,
+        stars: isNaN(starsNum) ? 0 : starsNum,
+        forks: isNaN(forksNum) ? 0 : forksNum,
+        tags: newProjectTags,
+      }
+      setProjects([newProject, ...projects])
+    } else {
+      // Edit existing project
+      setProjects((prevProjects) =>
+        prevProjects.map((project) =>
+          project.id === editingProjectId
+            ? {
+                ...project,
+                name: newProjectName.trim(),
+                description: newProjectDescription.trim(),
+                language: newProjectLanguage,
+                stars: isNaN(starsNum) ? 0 : starsNum,
+                forks: isNaN(forksNum) ? 0 : forksNum,
+                tags: newProjectTags,
+              }
+            : project
+        )
+      )
     }
 
-    // Add new project to list
-    setProjects([newProject, ...projects])
     closeModal()
   }
 
@@ -161,7 +199,10 @@ export default function OpenSourcePage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-white">Open Source Projects</h1>
-            <Button className="bg-white text-black hover:bg-white/90" onClick={openModal}>
+            <Button
+              className="bg-white text-black hover:bg-white/90"
+              onClick={openAddModal}
+            >
               <Plus className="mr-2 h-4 w-4" /> Add Project
             </Button>
           </div>
@@ -218,7 +259,6 @@ export default function OpenSourcePage() {
                           <GitFork className="h-4 w-4" />
                           <span>{project.forks}</span>
                         </div>
-                        {/* Show tags if any */}
                         {project.tags && project.tags.length > 0 && (
                           <div className="flex gap-1 flex-wrap">
                             {project.tags.map((tag, i) => (
@@ -233,9 +273,18 @@ export default function OpenSourcePage() {
                         )}
                       </div>
                     </div>
-                    <Button variant="outline" className="border-white/20">
-                      View Project
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button variant="outline" className="border-white/20">
+                        View Project
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-white/20 flex items-center gap-1"
+                        onClick={() => openEditModal(project.id)}
+                      >
+                        <Edit className="h-4 w-4" /> Edit
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))
@@ -258,12 +307,12 @@ export default function OpenSourcePage() {
           aria-labelledby="modal-title"
         >
           <form
-            onClick={(e) => e.stopPropagation()} // Prevent closing on form click
-            onSubmit={handleAddProject}
+            onClick={(e) => e.stopPropagation()} // Prevent closing modal on form click
+            onSubmit={handleSubmit}
             className="bg-gray-900 rounded-lg max-w-md w-full p-6 text-white glass-effect"
           >
             <h2 id="modal-title" className="text-2xl font-bold mb-6">
-              Add New Project
+              {editingProjectId === null ? "Add New Project" : "Edit Project"}
             </h2>
 
             <label className="block mb-4">
@@ -373,7 +422,7 @@ export default function OpenSourcePage() {
                 Cancel
               </Button>
               <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-                Add Project
+                {editingProjectId === null ? "Add Project" : "Save Changes"}
               </Button>
             </div>
           </form>
