@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Search, GitFork, Star } from "lucide-react"
+import { Plus, Search, GitFork, Star, X } from "lucide-react"
 
 const initialProjects = [
   {
@@ -55,6 +55,8 @@ export default function OpenSourcePage() {
   const [newProjectLanguage, setNewProjectLanguage] = useState("TypeScript")
   const [newProjectStars, setNewProjectStars] = useState("")
   const [newProjectForks, setNewProjectForks] = useState("")
+  const [newTagInput, setNewTagInput] = useState("")
+  const [newProjectTags, setNewProjectTags] = useState<string[]>([])
 
   // Filter projects by search and language
   let filteredProjects = projects.filter((project) => {
@@ -89,6 +91,8 @@ export default function OpenSourcePage() {
     setNewProjectLanguage("TypeScript")
     setNewProjectStars("")
     setNewProjectForks("")
+    setNewProjectTags([])
+    setNewTagInput("")
   }
 
   // Handler to close modal
@@ -96,8 +100,30 @@ export default function OpenSourcePage() {
     setModalOpen(false)
   }
 
+  // Add tag on Enter key or button click
+  const addTag = () => {
+    const tag = newTagInput.trim()
+    if (tag !== "" && !newProjectTags.includes(tag)) {
+      setNewProjectTags([...newProjectTags, tag])
+      setNewTagInput("")
+    }
+  }
+
+  // Remove tag by index
+  const removeTag = (index: number) => {
+    setNewProjectTags(newProjectTags.filter((_, i) => i !== index))
+  }
+
+  // Handle Enter key in tag input
+  const handleTagInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      addTag()
+    }
+  }
+
   // Handler to submit new project
-  const handleAddProject = (e: React.FormEvent) => {
+  const handleAddProject = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     // Basic validation
     if (!newProjectName.trim()) {
@@ -121,7 +147,7 @@ export default function OpenSourcePage() {
       language: newProjectLanguage,
       stars: isNaN(starsNum) ? 0 : starsNum,
       forks: isNaN(forksNum) ? 0 : forksNum,
-      tags: [], // tags could be extended if needed
+      tags: newProjectTags,
     }
 
     // Add new project to list
@@ -135,10 +161,7 @@ export default function OpenSourcePage() {
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-white">Open Source Projects</h1>
-            <Button
-              className="bg-white text-black hover:bg-white/90"
-              onClick={openModal}
-            >
+            <Button className="bg-white text-black hover:bg-white/90" onClick={openModal}>
               <Plus className="mr-2 h-4 w-4" /> Add Project
             </Button>
           </div>
@@ -185,7 +208,7 @@ export default function OpenSourcePage() {
                     <div>
                       <h3 className="text-xl font-bold text-white mb-2">{project.name}</h3>
                       <p className="text-gray-400 mb-4">{project.description}</p>
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 items-center flex-wrap">
                         <span className="text-sm text-gray-400">{project.language}</span>
                         <div className="flex items-center gap-1 text-gray-400">
                           <Star className="h-4 w-4" />
@@ -195,9 +218,22 @@ export default function OpenSourcePage() {
                           <GitFork className="h-4 w-4" />
                           <span>{project.forks}</span>
                         </div>
+                        {/* Show tags if any */}
+                        {project.tags && project.tags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {project.tags.map((tag, i) => (
+                              <span
+                                key={i}
+                                className="text-xs bg-purple-600 rounded-full px-2 py-0.5 text-white"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <Button variant="outline" className=" border-white/20">
+                    <Button variant="outline" className="border-white/20">
                       View Project
                     </Button>
                   </div>
@@ -217,13 +253,18 @@ export default function OpenSourcePage() {
         <div
           className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
           onClick={closeModal}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
         >
           <form
-            onClick={(e) => e.stopPropagation()} // Prevent modal close when clicking inside form
+            onClick={(e) => e.stopPropagation()} // Prevent closing on form click
             onSubmit={handleAddProject}
             className="bg-gray-900 rounded-lg max-w-md w-full p-6 text-white glass-effect"
           >
-            <h2 className="text-2xl font-bold mb-6">Add New Project</h2>
+            <h2 id="modal-title" className="text-2xl font-bold mb-6">
+              Add New Project
+            </h2>
 
             <label className="block mb-4">
               <span className="block mb-1 font-medium">Project Name *</span>
@@ -291,13 +332,44 @@ export default function OpenSourcePage() {
               </label>
             </div>
 
+            {/* Tags input section */}
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Tags</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {newProjectTags.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center bg-purple-600 px-3 py-1 rounded-full text-sm cursor-default"
+                  >
+                    <span>{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeTag(index)}
+                      className="ml-2 hover:text-red-400"
+                      aria-label={`Remove tag ${tag}`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="Enter a tag and press Enter"
+                  value={newTagInput}
+                  onChange={(e) => setNewTagInput(e.target.value)}
+                  onKeyDown={handleTagInputKeyDown}
+                  className="bg-transparent border-white/50 text-white"
+                />
+                <Button type="button" onClick={addTag} className="px-4">
+                  Add
+                </Button>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="border-white/50"
-                onClick={closeModal}
-              >
+              <Button type="button" variant="outline" className="border-white/50" onClick={closeModal}>
                 Cancel
               </Button>
               <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
