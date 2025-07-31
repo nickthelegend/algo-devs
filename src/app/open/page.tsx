@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Plus, Search, GitFork, Star, X, Edit } from "lucide-react"
+import { Plus, Search, GitFork, Star, X, Edit, Trash2 } from "lucide-react"
 
 const initialProjects = [
   {
@@ -50,7 +50,7 @@ export default function OpenSourcePage() {
 
   // Modal state and form fields
   const [modalOpen, setModalOpen] = useState(false)
-  // Editing mode state: null = adding new, project object = editing
+  // Editing mode state: null = adding new, number = editing project ID
   const [editingProjectId, setEditingProjectId] = useState<number | null>(null)
 
   const [newProjectName, setNewProjectName] = useState("")
@@ -193,6 +193,17 @@ export default function OpenSourcePage() {
     closeModal()
   }
 
+  // Handle delete project
+  const handleDeleteProject = (projectId: number) => {
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) return
+
+    const confirmed = window.confirm(`Are you sure you want to delete project "${project.name}"?`)
+    if (confirmed) {
+      setProjects((prevProjects) => prevProjects.filter((p) => p.id !== projectId))
+    }
+  }
+
   return (
     <>
       <main className="min-h-screen animated-gradient pt-20">
@@ -283,6 +294,13 @@ export default function OpenSourcePage() {
                         onClick={() => openEditModal(project.id)}
                       >
                         <Edit className="h-4 w-4" /> Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="border-white/20 flex items-center gap-1"
+                        onClick={() => handleDeleteProject(project.id)}
+                      >
+                        <Trash2 className="h-4 w-4" /> Delete
                       </Button>
                     </div>
                   </div>
