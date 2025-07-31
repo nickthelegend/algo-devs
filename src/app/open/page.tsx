@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,6 +19,15 @@ const projects = [
 ]
 
 export default function OpenSourcePage() {
+  const [query, setQuery] = useState("")
+
+  // Filter projects by search query matching name or description
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.name.toLowerCase().includes(query.toLowerCase()) ||
+      project.description.toLowerCase().includes(query.toLowerCase())
+  )
+
   return (
     <main className="min-h-screen animated-gradient pt-20">
       <div className="container mx-auto px-4 py-8">
@@ -32,7 +42,12 @@ export default function OpenSourcePage() {
           <div className="flex gap-4 flex-wrap">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input placeholder="Search projects..." className="pl-10 bg-transparent border-white/20 text-white" />
+              <Input
+                placeholder="Search projects..."
+                className="pl-10 bg-transparent border-white/20 text-white"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
             </div>
             <Select>
               <SelectTrigger className="w-[180px] bg-transparent text-white border-white/20">
@@ -58,7 +73,7 @@ export default function OpenSourcePage() {
         </div>
 
         <div className="grid gap-6">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <Card key={project.id} className="glass-effect p-6">
               <div className="flex justify-between items-start">
                 <div>
@@ -82,9 +97,13 @@ export default function OpenSourcePage() {
               </div>
             </Card>
           ))}
+          {filteredProjects.length === 0 && (
+            <div className="text-white opacity-60 text-center py-16 col-span-full text-lg">
+              No projects found for "<span className="font-mono">{query}</span>"
+            </div>
+          )}
         </div>
       </div>
     </main>
   )
 }
-
