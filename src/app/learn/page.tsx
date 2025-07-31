@@ -4060,7 +4060,9 @@ export default class SelfPayment extends LogicSig {
 
 const categories = ["All", "Beginner", "Intermediate", "Advanced"]
 
+
 export default function LearnPage() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [selectedContract, setSelectedContract] = useState<(typeof smartContractExamples)[0] | null>(null)
@@ -4073,8 +4075,15 @@ export default function LearnPage() {
 
   const filteredExamples = smartContractExamples.filter((example) => {
     const categoryMatch = selectedCategory === "All" || example.category === selectedCategory
-    return categoryMatch
-  })
+    if (!categoryMatch) return false;
+    if (!searchTerm) return true;
+    const lowerSearch = searchTerm.toLowerCase();
+    return (
+      example.title.toLowerCase().includes(lowerSearch) ||
+      example.description.toLowerCase().includes(lowerSearch) ||
+      example.id.toLowerCase().includes(lowerSearch)
+    );
+  });
 
   const copyToClipboard = async (code: string, id: string) => {
     try {
@@ -4277,6 +4286,20 @@ export default function LearnPage() {
           </p>
         </div>
 
+        <div className="flex justify-center mb-6">
+          <div className="relative w-full max-w-md">
+            <input
+              type="text"
+              placeholder="Search by name, description, or ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-3 w-full rounded-lg bg-black/30 border-purple-500/20 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none transition-all duration-200"
+            />
+            <BookOpen className="absolute left-3 top-3 h-5 w-5 text-purple-400 pointer-events-none" />
+          </div>
+        </div>
+
+
         <div className="flex flex-wrap gap-4 mb-8 justify-center">
           <div className="flex flex-wrap gap-2">
             <span className="text-sm text-gray-400 self-center mr-2">Category:</span>
@@ -4299,12 +4322,13 @@ export default function LearnPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredExamples.map((example, index) => (
-            <Card
-              key={example.id}
-              className="glass-effect border-purple-500/20 hover:border-purple-400/40 transition-all duration-500 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
+          {filteredExamples.length > 0 ? (
+            filteredExamples.map((example, index) => (
+              <Card
+                key={example.id}
+                className="glass-effect border-purple-500/20 hover:border-purple-400/40 transition-all duration-500 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
@@ -4408,7 +4432,13 @@ export default function LearnPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ))
+        ) : (
+          <div className="col-span-full text-center text-purple-300 py-12">
+            <p className="text-lg font-semibold">No smart contracts found!</p>
+            <p className="text-gray-400">Try a different search term or select another category.</p>
+          </div>
+        )}
         </div>
 
         <div className="text-center mt-16">

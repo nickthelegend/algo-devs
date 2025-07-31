@@ -200,11 +200,6 @@ export default function BountiesPage() {
             continue
           }
 
-          // Skip if not matching the search term
-          if (searchTerm && !bountyConfig.bountyName.toLowerCase().includes(searchTerm.toLowerCase())) {
-            continue
-          }
-
           // Convert to UI Bounty format
           const uiBounty: Bounty = {
             id: bountyConfig.bountyId.toString(),
@@ -284,7 +279,6 @@ export default function BountiesPage() {
                 className="pl-10 bg-black/30 border-indigo-400/20 text-white h-12 rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
             {activeAccount && (
@@ -400,6 +394,15 @@ export default function BountiesPage() {
       )
     }
 
+    const filteredBounties = bounties.filter((bounty) => {
+      if (!searchTerm) return true; // no search term = show all
+      const lowerSearch = searchTerm.toLowerCase();
+      return (
+        bounty.title.toLowerCase().includes(lowerSearch) ||
+        bounty.id.includes(searchTerm) // searchTerm as substring of id string
+      );
+    });
+
     if (bounties.length === 0) {
       return (
         <div className="bg-black/30 rounded-xl border border-indigo-400/20 p-10 text-center">
@@ -419,7 +422,7 @@ export default function BountiesPage() {
 
     return (
       <div className="grid gap-4">
-        {bounties.map((bounty) => (
+        {filteredBounties.map((bounty) => (
           <Card
             key={bounty.id}
             className="bg-black/40 border-indigo-400/20 hover:border-indigo-400/50 transition-all overflow-hidden cursor-pointer"

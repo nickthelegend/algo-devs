@@ -7,6 +7,7 @@ import { ArrowRight, Code, Gem, GitBranch, GraduationCap } from "lucide-react"
 import { motion, useScroll, useTransform, useInView } from "framer-motion"
 import { createClient } from "@supabase/supabase-js"
 import { Skeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -30,16 +31,19 @@ const features = [
     title: "Bounties",
     description: "Earn rewards by solving blockchain challenges and contributing to the ecosystem",
     icon: Gem,
+    url: "bounties",
   },
   {
     title: "Open Source Projects",
     description: "Collaborate on cutting-edge Algorand projects and shape the future of blockchain",
     icon: GitBranch,
+    url : "open",
   },
   {
     title: "Learning Resources",
     description: "Access comprehensive tutorials and documentation to master Algorand development",
     icon: GraduationCap,
+    url: "learn",
   },
 ]
 
@@ -268,18 +272,23 @@ export default function Home() {
                 animate={featuresInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
                 transition={{ duration: 0.6, delay: index * 0.2, ease: "easeOut" }}
               >
-                <Card className="bg-black/40 border-white/10 h-full hover:border-[#6104d7]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6104d7]/10">
-                  <CardContent className="p-6">
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                    >
-                      <feature.icon className="h-12 w-12 text-[#ec0033] mb-4" />
-                    </motion.div>
-                    <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-                    <p className="text-gray-400">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <a
+                  href={feature.url}
+                  style={{ display: "block", height: "100%" }}
+                >
+                  <Card className="bg-black/40 border-white/10 h-full hover:border-[#6104d7]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#6104d7]/10">
+                    <CardContent className="p-6">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      >
+                        <feature.icon className="h-12 w-12 text-[#ec0033] mb-4" />
+                      </motion.div>
+                      <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                      <p className="text-gray-400">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </a>
               </motion.div>
             ))}
           </div>
@@ -328,9 +337,11 @@ export default function Home() {
               Join our community of developers and start contributing to the Algorand ecosystem
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button size="lg" className="bg-[#ec0033] hover:bg-[#ec0033]/90 text-white">
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <a href="open">
+                <Button size="lg" className="bg-[#ec0033] hover:bg-[#ec0033]/90 text-white">
+                 Get Started <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </a>              
             </motion.div>
           </motion.div>
         </div>
@@ -389,9 +400,11 @@ export default function Home() {
                             whileHover={{ x: 5 }}
                             transition={{ type: "spring", stiffness: 400, damping: 10 }}
                           >
-                            <Button variant="ghost" className="text-[#6104d7] hover:text-[#6104d7]/90">
-                              Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
+                            <a href="projects">
+                              <Button variant="ghost" className="text-[#6104d7] hover:text-[#6104d7]/90">
+                                Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                              </Button>
+                            </a>
                           </motion.div>
                         </CardContent>
                       </Card>
@@ -421,9 +434,11 @@ export default function Home() {
                               whileHover={{ x: 5 }}
                               transition={{ type: "spring", stiffness: 400, damping: 10 }}
                             >
-                              <Button variant="ghost" className="text-[#6104d7] hover:text-[#6104d7]/90">
-                                Learn More <ArrowRight className="ml-2 h-4 w-4" />
-                              </Button>
+                              <a href="projects">
+                                <Button variant="ghost" className="text-[#6104d7] hover:text-[#6104d7]/90">
+                                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                              </a>
                             </motion.div>
                           </CardContent>
                         </Card>

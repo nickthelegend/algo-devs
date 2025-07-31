@@ -77,11 +77,6 @@ export default function ProjectsPage() {
       }
       let query = supabase.from("projects").select("*")
 
-      // Apply search filter if provided
-      if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
-      }
-
       // Apply category filter if selected
       if (selectedCategory) {
         query = query.eq("category", selectedCategory)
@@ -122,6 +117,16 @@ export default function ProjectsPage() {
   const toggleMyProjects = () => {
     setShowMyProjects(!showMyProjects)
   }
+
+  const filteredProjects = projects.filter((project) => {
+    if (!searchTerm) return true;
+    const lowerSearch = searchTerm.toLowerCase();
+    return (
+      project.name.toLowerCase().includes(lowerSearch) ||
+      project.description.toLowerCase().includes(lowerSearch) ||
+      project.id.toLowerCase().includes(lowerSearch)
+    );
+  });
 
   return (
     <main className="min-h-screen animated-gradient pt-20">
@@ -192,6 +197,8 @@ export default function ProjectsPage() {
           </div>
         </div>
 
+        
+        
         {/* Projects Grid */}
         {loading ? (
           <div className="flex justify-center items-center py-12">
@@ -199,7 +206,7 @@ export default function ProjectsPage() {
           </div>
         ) : projects.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => (
+            {filteredProjects.map((project) => (
               <Card
                 key={project.id}
                 className="bg-black/40 border-indigo-400/20 overflow-hidden group hover:border-indigo-400/50 transition-all"
