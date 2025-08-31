@@ -8,6 +8,7 @@ import { motion, useScroll, useTransform, useInView } from "framer-motion"
 import { createClient } from "@supabase/supabase-js"
 import { Skeleton } from "@/components/ui/skeleton"
 import Link from "next/link"
+import Chatbot from "@/components/Chatbot";
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -447,6 +448,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <Chatbot />
     </main>
   )
 }
