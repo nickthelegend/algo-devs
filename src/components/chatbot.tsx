@@ -35,10 +35,15 @@ export default function Chatbot() {
       {/* Floating Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="rounded-full bg-purple-600 hover:bg-purple-700 text-white p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none"
-      >
+        className="relative rounded-full bg-purple-600 hover:bg-purple-700 text-white p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none"
+        >
+        {/* Notification Badge - visible only when chat is closed */}
+        {!isOpen && (
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+        )}
         <MessageCircle size={24} />
-      </button>
+        </button>
+
     </div>
   );
 }
